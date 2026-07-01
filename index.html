@@ -279,18 +279,18 @@
         <textarea id="patchInput" spellcheck="false" placeholder="Paste the patch script Claude gave you here, e.g.
 
 REPLACE 12
-&gt;&gt;&gt;
+[[[
   &lt;h1&gt;New Title&lt;/h1&gt;
-&lt;&lt;&lt;
+]]]
 
 FIND
-&gt;&gt;&gt;
+[[[
 color: red;
-&lt;&lt;&lt;
+]]]
 REPLACE_WITH
-&gt;&gt;&gt;
+[[[
 color: #e8a33d;
-&lt;&lt;&lt;"></textarea>
+]]]"></textarea>
       </div>
       <div class="btnrow">
         <button class="primary" id="applyBtn" type="button">Apply patch</button>
@@ -329,18 +329,18 @@ color: #e8a33d;
       <div class="cmd">
         <div class="cn">REPLACE line</div>
         <pre>REPLACE 12
-&gt;&gt;&gt;
+[[[
   &lt;h1&gt;New Title&lt;/h1&gt;
-&lt;&lt;&lt;</pre>
+]]]</pre>
         <div class="desc">Replaces a single line, or a range with <code class="inline">REPLACE 12-15</code>, with the content in the block.</div>
       </div>
 
       <div class="cmd">
         <div class="cn">INSERT_AFTER / INSERT_BEFORE line</div>
         <pre>INSERT_AFTER 30
-&gt;&gt;&gt;
+[[[
 &lt;script src="app.js"&gt;&lt;/script&gt;
-&lt;&lt;&lt;</pre>
+]]]</pre>
         <div class="desc">Inserts new content right after (or before) the given line, without touching anything else.</div>
       </div>
 
@@ -354,22 +354,22 @@ DELETE 40-45</pre>
       <div class="cmd">
         <div class="cn">FIND / REPLACE_WITH</div>
         <pre>FIND
-&gt;&gt;&gt;
+[[[
 color: red;
-&lt;&lt;&lt;
+]]]
 REPLACE_WITH
-&gt;&gt;&gt;
+[[[
 color: #e8a33d;
-&lt;&lt;&lt;</pre>
+]]]</pre>
         <div class="desc">Text-based, not line-based — replaces the first exact match anywhere in the file. Good when a snippet moved or the exact line number is uncertain.</div>
       </div>
 
       <div class="cmd">
         <div class="cn">PREPEND / APPEND</div>
         <pre>APPEND
-&gt;&gt;&gt;
+[[[
 &lt;!-- end of file --&gt;
-&lt;&lt;&lt;</pre>
+]]]</pre>
         <div class="desc">Adds content to the very start or very end of the file.</div>
       </div>
 
@@ -462,22 +462,22 @@ color: #e8a33d;
 "",
 "REPLACE <line>            -> replace one line. Use REPLACE <start>-<end> for a range.",
 "  followed by a block:",
-"  >>>",
+"  [[[",
 "  <new content, one or more lines>",
-"  <<<",
+"  ]]]",
 "",
-"INSERT_AFTER <line> / INSERT_BEFORE <line>  -> insert new lines, same >>> ... <<< block format.",
+"INSERT_AFTER <line> / INSERT_BEFORE <line>  -> insert new lines, same [[[ ... ]]] block format.",
 "",
 "DELETE <line>  or  DELETE <start>-<end>   -> delete lines, no block needed.",
 "",
 "FIND",
-">>>",
+"[[[",
 "<exact snippet to find, can span lines>",
-"<<<",
+"]]]",
 "REPLACE_WITH",
-">>>",
+"[[[",
 "<replacement text>",
-"<<<",
+"]]]",
 "  -> use this instead of line numbers when you're changing a snippet whose exact line isn't certain, or the change isn't line-aligned.",
 "",
 "PREPEND / APPEND  -> same block format, adds content to the very start/end of the file.",
@@ -545,20 +545,24 @@ color: #e8a33d;
     }
     function readBlock(cmdLabel){
       skipBlanksAndComments();
-      if(i >= lines.length || lines[i].trim() !== '>>>'){
-        errors.push('Expected ">>>" to start a block after "' + cmdLabel + '" (line ' + (i+1) + ' of patch script).');
+      const openMark = i < lines.length ? lines[i].trim() : '';
+      const isOpen = openMark === '[[[' || openMark === '>>>';
+      if(i >= lines.length || !isOpen){
+        errors.push('Expected "[[[" to start a block after "' + cmdLabel + '" (line ' + (i+1) + ' of patch script).');
         return null;
       }
-      i++; // consume >>>
+      const closeMark = openMark === '[[[' ? ']]]' : '<<<';
+      i++; // consume opening marker
       const buf = [];
       let closed = false;
       while(i < lines.length){
-        if(lines[i].trim() === '<<<'){ closed = true; i++; break; }
+        const t = lines[i].trim();
+        if(t === closeMark || t === ']]]' || t === '<<<'){ closed = true; i++; break; }
         buf.push(lines[i]);
         i++;
       }
       if(!closed){
-        errors.push('Block opened with ">>>" after "' + cmdLabel + '" was never closed with "<<<".');
+        errors.push('Block opened with "' + openMark + '" after "' + cmdLabel + '" was never closed with "' + closeMark + '".');
         return null;
       }
       return buf.join('\n');
