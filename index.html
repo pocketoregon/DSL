@@ -183,6 +183,11 @@
     background:var(--add-bg); border:1px solid var(--add-border);
     color:var(--add); font-size:12.5px;
   }
+  .infobox{
+    margin-top:10px; padding:10px 12px; border-radius:8px;
+    background:rgba(232,163,61,0.08); border:1px solid rgba(232,163,61,0.35);
+    color:var(--amber); font-size:12.5px; font-family:var(--font-code); white-space:pre-wrap;
+  }
 
   /* ---------- Help / spec ---------- */
   details.help{
@@ -372,6 +377,11 @@ color: #e8a33d;
       from the bottom of the file upward, so earlier line numbers stay valid even as later ones shift.
       Then FIND / REPLACE_WITH runs on the result, then PREPEND / APPEND. Keep multiple line-based edits
       to non-overlapping ranges in one patch.</p>
+
+      <p style="margin-top:14px;">If you get confusing "unrecognized line" errors on a patch that looks correct,
+      the pasted text likely picked up invisible characters (non-breaking spaces, zero-width spaces, or leftover
+      text from a previous attempt still sitting in the box). Patchbay now auto-cleans common invisible characters
+      before parsing and will tell you if it had to. Use <b>Clear</b> on panel 2 before pasting a new patch to be safe.</p>
     </div>
   </details>
 
@@ -418,7 +428,6 @@ color: #e8a33d;
   function countCommands(){
     const re = /^(REPLACE|INSERT_AFTER|INSERT_BEFORE|DELETE|FIND|PREPEND|APPEND)\b/gm;
     const matches = patchInput.value.match(re) || [];
-    // FIND consumes REPLACE_WITH as part of same command, so don't double count REPLACE_WITH (not matched anyway)
     patchCount.textContent = matches.length + ' command' + (matches.length===1?'':'s');
   }
   patchInput.addEventListener('input', countCommands);
@@ -488,6 +497,39 @@ color: #e8a33d;
         document.execCommand('copy'); document.body.removeChild(ta);
         showToast(msg);
       });
+  }
+
+  // ---------------- Input sanitization ----------------
+  // Pasted text (especially from chat UIs) can carry invisible characters that
+  // silently break exact-match markers like ">>>" / "<<<" (zero-width spaces,
+  // BOM, non-breaking spaces that look like regular spaces, smart quotes, etc).
+  // We normalize those before parsing and tell the user if we changed anything.
+  function sanitizePatchText(raw){
+    let text = raw;
+    let changed = false;
+
+    // Strip BOM
+    if(text.charCodeAt(0) === 0xFEFF){ text = text.slice(1); changed = true; }
+
+    // Zero-width space, zero-width non-joiner/joiner, word joiner
+    if(/[\u200B\u200C\u200D\u2060]/.test(text)){
+      text = text.replace(/[\u200B\u200C\u200D\u2060]/g, '');
+      changed = true;
+    }
+
+    // Non-breaking space / other unicode spaces -> regular space
+    if(/[\u00A0\u2000-\u200A\u202F\u205F\u3000]/.test(text)){
+      text = text.replace(/[\u00A0\u2000-\u200A\u202F\u205F\u3000]/g, ' ');
+      changed = true;
+    }
+
+    // Normalize CRLF/CR to LF so line splitting is consistent
+    if(/\r/.test(text)){
+      text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      changed = true;
+    }
+
+    return {text, changed};
   }
 
   // ---------------- Parser ----------------
@@ -688,6 +730,12 @@ color: #e8a33d;
     box.textContent = 'Applied with warnings:\n' + list.map(e=>'• '+e).join('\n');
     messages.appendChild(box);
   }
+  function showInfo(text){
+    const box = document.createElement('div');
+    box.className = 'infobox';
+    box.textContent = text;
+    messages.appendChild(box);
+  }
   function showOk(text){
     const box = document.createElement('div');
     box.className = 'okbox';
@@ -698,21 +746,29 @@ color: #e8a33d;
   $('applyBtn').addEventListener('click', ()=>{
     clearMessages();
     const original = origInput.value;
-    const script = patchInput.value;
+    const rawScript = patchInput.value;
     if(!original.trim()){ showErrors(['Paste your original file in panel 1 first.']); return; }
-    if(!script.trim()){ showErrors(['Paste a patch script in panel 2 first.']); return; }
+    if(!rawScript.trim()){ showErrors(['Paste a patch script in panel 2 first.']); return; }
+
+    const {text: script, changed} = sanitizePatchText(rawScript);
+    if(changed){
+      // Reflect the cleaned text back into the textarea so what you see is what gets parsed.
+      patchInput.value = script;
+      countCommands();
+      showInfo('Note: cleaned invisible/odd characters (non-breaking spaces, zero-width characters, or CRLF line endings) from the pasted patch script before parsing.');
+    }
 
     const {ops, errors} = parsePatch(script);
     if(errors.length){ showErrors(errors); if(ops.length===0) return; }
     if(ops.length === 0){ showErrors(['No valid commands found in the patch script.']); return; }
 
-    const {text, warnings} = applyPatch(original, ops);
+    const {text: resultText, warnings} = applyPatch(original, ops);
     if(warnings.length) showWarnings(warnings);
 
-    lastResultText = text;
-    const newLineCount = text.split('\n').length;
+    lastResultText = resultText;
+    const newLineCount = resultText.split('\n').length;
     resultCount.textContent = newLineCount + ' lines';
-    renderDiff(original, text);
+    renderDiff(original, resultText);
     resultBtns.style.display = 'flex';
     if(!warnings.length) showOk('Applied ' + ops.length + ' command' + (ops.length===1?'':'s') + ' successfully.');
   });
