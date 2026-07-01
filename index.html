@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patchbay — token-saving code patcher for Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#17181a;
+    --bg-panel:#1e2023;
+    --bg-inset:#131415;
+    --line:#2c2f33;
+    --line-soft:#25272b;
+    --text:#e8e6e1;
+    --text-dim:#9a9a94;
+    --text-faint:#65665f;
+    --amber:#e8a33d;
+    --amber-dim:#8a642a;
+    --add:#5fd0a8;
+    --add-bg:rgba(95,208,168,0.10);
+    --add-border:rgba(95,208,168,0.35);
+    --del:#ef7a6d;
+    --del-bg:rgba(239,122,109,0.10);
+    --del-border:rgba(239,122,109,0.35);
+    --font-ui:'Space Grotesk', system-ui, sans-serif;
+    --font-code:'JetBrains Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(232,163,61,0.06), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-ui);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--amber-dim); color:#fff;}
+  a{color:var(--amber);}
+
+  .wrap{max-width:1400px; margin:0 auto; padding:28px 24px 80px;}
+
+  /* ---------- Header / hero ---------- */
+  header.hero{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:24px; flex-wrap:wrap;
+    border-bottom:1px solid var(--line);
+    padding-bottom:22px; margin-bottom:26px;
+  }
+  .brand{display:flex; align-items:center; gap:14px;}
+  .jack{
+    width:40px; height:40px; border-radius:50%;
+    background:var(--bg-inset); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    position:relative; flex:none;
+  }
+  .jack::before{
+    content:"";
+    width:16px; height:16px; border-radius:50%;
+    background:var(--bg);
+    border:2px solid var(--amber);
+    box-shadow:0 0 0 3px rgba(232,163,61,0.12);
+  }
+  .brand h1{
+    font-size:22px; font-weight:700; margin:0; letter-spacing:-0.01em;
+  }
+  .brand h1 span{color:var(--amber);}
+  .brand p{margin:2px 0 0; color:var(--text-dim); font-size:13px;}
+
+  .hero-blurb{max-width:420px; font-size:13px; color:var(--text-dim); line-height:1.55;}
+  .hero-blurb b{color:var(--text); font-weight:600;}
+
+  /* ---------- Patch strip signature (decorative, animated) ---------- */
+  .strip{
+    display:flex; flex-direction:column; gap:3px;
+    font-family:var(--font-code); font-size:11px; line-height:1.5;
+    padding:10px 12px; border:1px solid var(--line); border-radius:8px;
+    background:var(--bg-inset); min-width:230px;
+  }
+  .strip .l{display:flex; gap:8px; opacity:0; animation:reveal 0.4s ease forwards;}
+  .strip .l:nth-child(1){animation-delay:.05s}
+  .strip .l:nth-child(2){animation-delay:.15s}
+  .strip .l:nth-child(3){animation-delay:.25s}
+  .strip .l:nth-child(4){animation-delay:.35s}
+  .strip .m{width:14px; text-align:center; flex:none; color:var(--text-faint);}
+  .strip .l.add .m{color:var(--add);}
+  .strip .l.del .m{color:var(--del);}
+  .strip .t{color:var(--text-faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .strip .l.add .t{color:var(--add);}
+  .strip .l.del .t{color:var(--del); text-decoration:line-through; text-decoration-color:rgba(239,122,109,0.5);}
+  @keyframes reveal{ to{opacity:1;} }
+
+  /* ---------- Layout ---------- */
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media (max-width:920px){ .cols{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:10px;
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  .panel .ph{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 14px; border-bottom:1px solid var(--line);
+    font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--text-dim);
+    font-weight:600;
+  }
+  .panel .ph .count{font-family:var(--font-code); text-transform:none; letter-spacing:0; color:var(--text-faint);}
+
+  .editor{display:flex; height:360px; overflow:hidden;}
+  .gutter{
+    background:var(--bg-inset); color:var(--text-faint);
+    font-family:var(--font-code); font-size:12.5px; line-height:20px;
+    padding:10px 8px 10px 0; text-align:right; user-select:none;
+    overflow:hidden; flex:none; min-width:38px;
+    border-right:1px solid var(--line-soft);
+  }
+  textarea{
+    flex:1; resize:none; border:0; outline:0;
+    background:transparent; color:var(--text);
+    font-family:var(--font-code); font-size:12.5px; line-height:20px;
+    padding:10px 12px; white-space:pre; overflow:auto;
+  }
+  textarea::placeholder{color:var(--text-faint);}
+  .instructions-editor textarea{white-space:pre-wrap;}
+
+  .btnrow{display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--line); flex-wrap:wrap;}
+  button{
+    font-family:var(--font-ui); font-size:12.5px; font-weight:600;
+    padding:8px 13px; border-radius:7px; cursor:pointer;
+    border:1px solid var(--line); background:var(--bg-inset); color:var(--text);
+    transition:border-color .15s, color .15s, background .15s;
+  }
+  button:hover{border-color:var(--text-faint); color:#fff;}
+  button.primary{
+    background:var(--amber); border-color:var(--amber); color:#1a1200;
+  }
+  button.primary:hover{background:#f2b355; border-color:#f2b355;}
+  button.ghost{background:transparent;}
+  button:disabled{opacity:.4; cursor:not-allowed;}
+  button svg{vertical-align:-2px; margin-right:5px;}
+
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(12px);
+    background:#0f1011; border:1px solid var(--line); color:var(--text);
+    padding:9px 16px; border-radius:8px; font-size:12.5px; font-family:var(--font-ui);
+    opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
+    box-shadow:0 8px 24px rgba(0,0,0,.4);
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ---------- Output / diff ---------- */
+  .output{margin-top:18px;}
+  .diffbox{
+    font-family:var(--font-code); font-size:12.5px; line-height:20px;
+    max-height:480px; overflow:auto;
+  }
+  .drow{display:flex;}
+  .drow .m{
+    width:34px; flex:none; text-align:center; user-select:none;
+    color:var(--text-faint); border-right:1px solid var(--line-soft);
+  }
+  .drow .c{padding-left:10px; white-space:pre-wrap; word-break:break-word; flex:1;}
+  .drow.add{background:var(--add-bg);}
+  .drow.add .m{color:var(--add); background:rgba(95,208,168,0.08);}
+  .drow.del{background:var(--del-bg);}
+  .drow.del .m{color:var(--del); background:rgba(239,122,109,0.08);}
+  .drow.ctx .c{color:var(--text-dim);}
+
+  .empty-state{
+    padding:40px 20px; text-align:center; color:var(--text-faint); font-size:13px;
+  }
+
+  .warnbox{
+    margin-top:10px; padding:10px 12px; border-radius:8px;
+    background:rgba(239,122,109,0.08); border:1px solid var(--del-border);
+    color:#f2b3ab; font-size:12.5px; font-family:var(--font-code); white-space:pre-wrap;
+  }
+  .okbox{
+    margin-top:10px; padding:10px 12px; border-radius:8px;
+    background:var(--add-bg); border:1px solid var(--add-border);
+    color:var(--add); font-size:12.5px;
+  }
+
+  /* ---------- Help / spec ---------- */
+  details.help{
+    margin-top:26px; background:var(--bg-panel); border:1px solid var(--line); border-radius:10px;
+  }
+  details.help summary{
+    cursor:pointer; padding:14px 16px; font-weight:600; font-size:14px;
+    list-style:none; display:flex; align-items:center; justify-content:space-between;
+  }
+  details.help summary::-webkit-details-marker{display:none;}
+  details.help summary .chev{transition:transform .2s; color:var(--text-faint);}
+  details.help[open] summary .chev{transform:rotate(90deg);}
+  .help-body{padding:0 16px 20px; color:var(--text-dim); font-size:13px; line-height:1.6;}
+  .cmd{
+    margin-top:14px; border:1px solid var(--line-soft); border-radius:8px; overflow:hidden;
+  }
+  .cmd .cn{
+    font-family:var(--font-code); font-size:12.5px; font-weight:700; color:var(--amber);
+    background:var(--bg-inset); padding:7px 12px; border-bottom:1px solid var(--line-soft);
+  }
+  .cmd pre{
+    margin:0; padding:10px 12px; font-family:var(--font-code); font-size:12px;
+    color:var(--text); background:var(--bg-inset); overflow-x:auto; line-height:1.6;
+  }
+  .cmd .desc{padding:8px 12px; font-size:12.5px; color:var(--text-dim);}
+  code.inline{
+    font-family:var(--font-code); background:var(--bg-inset); border:1px solid var(--line-soft);
+    padding:1px 5px; border-radius:4px; font-size:12px; color:var(--amber);
+  }
+
+  footer{
+    margin-top:40px; padding-top:18px; border-top:1px solid var(--line);
+    color:var(--text-faint); font-size:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="brand">
+      <div class="jack"></div>
+      <div>
+        <h1>Patch<span>bay</span></h1>
+        <p>Ask Claude for a patch, not a rewrite. Paste both here.</p>
+      </div>
+    </div>
+
+    <div class="hero-blurb">
+      Pasting your whole file back and forth burns tokens on every small edit.
+      Give Claude the <b>patch script</b> below once — it replies with a few lines
+      of instructions instead of the full file, and this page applies them locally.
+    </div>
+
+    <div class="strip" aria-hidden="true">
+      <div class="l ctx"><span class="m">·</span><span class="t">&lt;header class="site"&gt;</span></div>
+      <div class="l del"><span class="m">−</span><span class="t">  &lt;h1&gt;Old Title&lt;/h1&gt;</span></div>
+      <div class="l add"><span class="m">+</span><span class="t">  &lt;h1&gt;New Title&lt;/h1&gt;</span></div>
+      <div class="l ctx"><span class="m">·</span><span class="t">&lt;/header&gt;</span></div>
+    </div>
+  </header>
+
+  <div class="cols">
+    <!-- ORIGINAL FILE -->
+    <div class="panel">
+      <div class="ph">
+        <span>1 · Your original file</span>
+        <span class="count" id="origCount">0 lines</span>
+      </div>
+      <div class="editor">
+        <div class="gutter" id="origGutter">1</div>
+        <textarea id="origInput" spellcheck="false" placeholder="Paste your unedited HTML / CSS / JS / any text file here..."></textarea>
+      </div>
+      <div class="btnrow">
+        <button class="primary" id="copyNumberedBtn" type="button">Copy with line numbers → for Claude</button>
+        <button class="ghost" id="loadFileBtn" type="button">Upload file</button>
+        <input type="file" id="fileInput" style="display:none" accept=".html,.htm,.css,.js,.txt,.md,.json,.xml,.php,.py">
+        <button class="ghost" id="clearOrigBtn" type="button">Clear</button>
+      </div>
+    </div>
+
+    <!-- PATCH SCRIPT -->
+    <div class="panel">
+      <div class="ph">
+        <span>2 · Claude's patch script</span>
+        <span class="count" id="patchCount">0 commands</span>
+      </div>
+      <div class="editor instructions-editor" style="height:360px;">
+        <textarea id="patchInput" spellcheck="false" placeholder="Paste the patch script Claude gave you here, e.g.
+
+REPLACE 12
+&gt;&gt;&gt;
+  &lt;h1&gt;New Title&lt;/h1&gt;
+&lt;&lt;&lt;
+
+FIND
+&gt;&gt;&gt;
+color: red;
+&lt;&lt;&lt;
+REPLACE_WITH
+&gt;&gt;&gt;
+color: #e8a33d;
+&lt;&lt;&lt;"></textarea>
+      </div>
+      <div class="btnrow">
+        <button class="primary" id="applyBtn" type="button">Apply patch</button>
+        <button class="ghost" id="copySpecBtn" type="button">Copy DSL guide → paste to Claude once</button>
+        <button class="ghost" id="clearPatchBtn" type="button">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="messages"></div>
+
+  <div class="output">
+    <div class="panel">
+      <div class="ph">
+        <span>3 · Result</span>
+        <span class="count" id="resultCount"></span>
+      </div>
+      <div class="diffbox" id="diffOutput">
+        <div class="empty-state">Apply a patch to see the result here.</div>
+      </div>
+      <div class="btnrow" id="resultBtns" style="display:none;">
+        <button class="primary" id="copyResultBtn" type="button">Copy final file</button>
+        <button class="ghost" id="downloadBtn" type="button">Download file</button>
+        <button class="ghost" id="useAsOrigBtn" type="button">Use as new original (chain another patch)</button>
+      </div>
+    </div>
+  </div>
+
+  <details class="help">
+    <summary>Patch script reference — the little language <span class="chev">▶</span></summary>
+    <div class="help-body">
+      <p>Line numbers always refer to the numbering of the file you pasted into panel 1
+      (use "Copy with line numbers" so Claude sees the same numbers you do). Commands are
+      plain text — no code fences needed. Blank lines and lines starting with <code class="inline">#</code> are ignored.</p>
+
+      <div class="cmd">
+        <div class="cn">REPLACE line</div>
+        <pre>REPLACE 12
+&gt;&gt;&gt;
+  &lt;h1&gt;New Title&lt;/h1&gt;
+&lt;&lt;&lt;</pre>
+        <div class="desc">Replaces a single line, or a range with <code class="inline">REPLACE 12-15</code>, with the content in the block.</div>
+      </div>
+
+      <div class="cmd">
+        <div class="cn">INSERT_AFTER / INSERT_BEFORE line</div>
+        <pre>INSERT_AFTER 30
+&gt;&gt;&gt;
+&lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;&lt;&lt;</pre>
+        <div class="desc">Inserts new content right after (or before) the given line, without touching anything else.</div>
+      </div>
+
+      <div class="cmd">
+        <div class="cn">DELETE line</div>
+        <pre>DELETE 40
+DELETE 40-45</pre>
+        <div class="desc">Deletes a single line or a range. No block needed.</div>
+      </div>
+
+      <div class="cmd">
+        <div class="cn">FIND / REPLACE_WITH</div>
+        <pre>FIND
+&gt;&gt;&gt;
+color: red;
+&lt;&lt;&lt;
+REPLACE_WITH
+&gt;&gt;&gt;
+color: #e8a33d;
+&lt;&lt;&lt;</pre>
+        <div class="desc">Text-based, not line-based — replaces the first exact match anywhere in the file. Good when a snippet moved or the exact line number is uncertain.</div>
+      </div>
+
+      <div class="cmd">
+        <div class="cn">PREPEND / APPEND</div>
+        <pre>APPEND
+&gt;&gt;&gt;
+&lt;!-- end of file --&gt;
+&lt;&lt;&lt;</pre>
+        <div class="desc">Adds content to the very start or very end of the file.</div>
+      </div>
+
+      <p style="margin-top:14px;">Order of operations: line-based commands (REPLACE / INSERT / DELETE) are applied first,
+      from the bottom of the file upward, so earlier line numbers stay valid even as later ones shift.
+      Then FIND / REPLACE_WITH runs on the result, then PREPEND / APPEND. Keep multiple line-based edits
+      to non-overlapping ranges in one patch.</p>
+    </div>
+  </details>
+
+  <footer>
+    <span>Runs entirely in your browser — nothing is uploaded anywhere.</span>
+    <span>Patchbay</span>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+  const origInput = $('origInput');
+  const origGutter = $('origGutter');
+  const patchInput = $('patchInput');
+  const origCount = $('origCount');
+  const patchCount = $('patchCount');
+  const resultCount = $('resultCount');
+  const diffOutput = $('diffOutput');
+  const messages = $('messages');
+  const resultBtns = $('resultBtns');
+  const toast = $('toast');
+
+  let lastResultText = null;
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>toast.classList.remove('show'), 1800);
+  }
+
+  function updateGutter(){
+    const lines = origInput.value.length ? origInput.value.split('\n') : [''];
+    origGutter.innerHTML = lines.map((_,i)=> (i+1)).join('<br>');
+    origCount.textContent = lines.length + ' line' + (lines.length===1?'':'s');
+  }
+  origInput.addEventListener('input', updateGutter);
+  origInput.addEventListener('scroll', ()=>{ origGutter.scrollTop = origInput.scrollTop; });
+  updateGutter();
+
+  function countCommands(){
+    const re = /^(REPLACE|INSERT_AFTER|INSERT_BEFORE|DELETE|FIND|PREPEND|APPEND)\b/gm;
+    const matches = patchInput.value.match(re) || [];
+    // FIND consumes REPLACE_WITH as part of same command, so don't double count REPLACE_WITH (not matched anyway)
+    patchCount.textContent = matches.length + ' command' + (matches.length===1?'':'s');
+  }
+  patchInput.addEventListener('input', countCommands);
+  countCommands();
+
+  $('clearOrigBtn').addEventListener('click', ()=>{ origInput.value=''; updateGutter(); });
+  $('clearPatchBtn').addEventListener('click', ()=>{ patchInput.value=''; countCommands(); });
+
+  $('loadFileBtn').addEventListener('click', ()=> $('fileInput').click());
+  $('fileInput').addEventListener('change', (e)=>{
+    const f = e.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{ origInput.value = reader.result; updateGutter(); showToast('Loaded ' + f.name); };
+    reader.readAsText(f);
+  });
+
+  $('copyNumberedBtn').addEventListener('click', ()=>{
+    const lines = origInput.value.split('\n');
+    if(!origInput.value){ showToast('Paste a file first'); return; }
+    const width = String(lines.length).length;
+    const numbered = lines.map((l,i)=> String(i+1).padStart(width,' ') + '| ' + l).join('\n');
+    copyText(numbered, 'Numbered file copied — paste it to Claude');
+  });
+
+  const DSL_GUIDE = [
+"You and I are using a tool called Patchbay to edit code files without you rewriting the whole file each time.",
+"",
+"I will paste my file to you with line numbers prefixed like \"12| <content>\" (the \"N| \" part is just a ruler, not part of the file).",
+"",
+"When I ask for a change, reply ONLY with a patch script in this DSL — no full file, no extra prose, no code fences around the whole script:",
+"",
+"REPLACE <line>            -> replace one line. Use REPLACE <start>-<end> for a range.",
+"  followed by a block:",
+"  >>>",
+"  <new content, one or more lines>",
+"  <<<",
+"",
+"INSERT_AFTER <line> / INSERT_BEFORE <line>  -> insert new lines, same >>> ... <<< block format.",
+"",
+"DELETE <line>  or  DELETE <start>-<end>   -> delete lines, no block needed.",
+"",
+"FIND",
+">>>",
+"<exact snippet to find, can span lines>",
+"<<<",
+"REPLACE_WITH",
+">>>",
+"<replacement text>",
+"<<<",
+"  -> use this instead of line numbers when you're changing a snippet whose exact line isn't certain, or the change isn't line-aligned.",
+"",
+"PREPEND / APPEND  -> same block format, adds content to the very start/end of the file.",
+"",
+"Rules: line numbers always refer to MY original numbering from the message I sent, never renumber after your own edits within the same patch. Keep multiple line-based edits to non-overlapping ranges. Lines starting with # are comments and ignored. Only use REPLACE/INSERT/DELETE/FIND/PREPEND/APPEND — nothing else. Do not restate the whole file. If a change is small, this should usually be just a few lines."
+  ].join('\n');
+
+  $('copySpecBtn').addEventListener('click', ()=>{
+    copyText(DSL_GUIDE, 'DSL guide copied — paste it to Claude once at the start of your chat');
+  });
+
+  function copyText(text, msg){
+    navigator.clipboard.writeText(text).then(()=> showToast(msg))
+      .catch(()=>{
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        showToast(msg);
+      });
+  }
+
+  // ---------------- Parser ----------------
+  function parsePatch(script){
+    const lines = script.split('\n');
+    const ops = [];
+    const errors = [];
+    let i = 0;
+
+    function isBlank(s){ return s.trim() === ''; }
+    function skipBlanksAndComments(){
+      while(i < lines.length && (isBlank(lines[i]) || lines[i].trim().startsWith('#'))) i++;
+    }
+    function readBlock(cmdLabel){
+      skipBlanksAndComments();
+      if(i >= lines.length || lines[i].trim() !== '>>>'){
+        errors.push('Expected ">>>" to start a block after "' + cmdLabel + '" (line ' + (i+1) + ' of patch script).');
+        return null;
+      }
+      i++; // consume >>>
+      const buf = [];
+      let closed = false;
+      while(i < lines.length){
+        if(lines[i].trim() === '<<<'){ closed = true; i++; break; }
+        buf.push(lines[i]);
+        i++;
+      }
+      if(!closed){
+        errors.push('Block opened with ">>>" after "' + cmdLabel + '" was never closed with "<<<".');
+        return null;
+      }
+      return buf.join('\n');
+    }
+
+    while(i < lines.length){
+      skipBlanksAndComments();
+      if(i >= lines.length) break;
+      const raw = lines[i];
+      const line = raw.trim();
+
+      let m;
+      if((m = line.match(/^REPLACE\s+(\d+)(?:-(\d+))?$/i))){
+        const start = parseInt(m[1],10), end = m[2] ? parseInt(m[2],10) : start;
+        i++;
+        const content = readBlock('REPLACE ' + m[1] + (m[2]?('-'+m[2]):''));
+        if(content !== null) ops.push({type:'replace', start, end, content});
+      }
+      else if((m = line.match(/^INSERT_AFTER\s+(\d+)$/i))){
+        const at = parseInt(m[1],10); i++;
+        const content = readBlock('INSERT_AFTER ' + m[1]);
+        if(content !== null) ops.push({type:'insert_after', at, content});
+      }
+      else if((m = line.match(/^INSERT_BEFORE\s+(\d+)$/i))){
+        const at = parseInt(m[1],10); i++;
+        const content = readBlock('INSERT_BEFORE ' + m[1]);
+        if(content !== null) ops.push({type:'insert_before', at, content});
+      }
+      else if((m = line.match(/^DELETE\s+(\d+)(?:-(\d+))?$/i))){
+        const start = parseInt(m[1],10), end = m[2] ? parseInt(m[2],10) : start;
+        i++;
+        ops.push({type:'delete', start, end});
+      }
+      else if(/^FIND$/i.test(line)){
+        i++;
+        const find = readBlock('FIND');
+        if(find === null){ continue; }
+        skipBlanksAndComments();
+        if(i >= lines.length || !/^REPLACE_WITH$/i.test(lines[i].trim())){
+          errors.push('Expected "REPLACE_WITH" after a FIND block (near line ' + (i+1) + ').');
+          continue;
+        }
+        i++;
+        const withText = readBlock('REPLACE_WITH');
+        if(withText !== null) ops.push({type:'find_replace', find, withText});
+      }
+      else if(/^PREPEND$/i.test(line)){
+        i++;
+        const content = readBlock('PREPEND');
+        if(content !== null) ops.push({type:'prepend', content});
+      }
+      else if(/^APPEND$/i.test(line)){
+        i++;
+        const content = readBlock('APPEND');
+        if(content !== null) ops.push({type:'append', content});
+      }
+      else {
+        errors.push('Unrecognized line in patch script: "' + raw + '" (line ' + (i+1) + ').');
+        i++;
+      }
+    }
+
+    return {ops, errors};
+  }
+
+  function applyPatch(originalText, ops){
+    const warnings = [];
+    let lines = originalText.split('\n');
+    const total = lines.length;
+
+    const lineOps = ops.filter(o => ['replace','insert_after','insert_before','delete'].includes(o.type));
+    // sort descending by the relevant starting line, so earlier edits don't shift later indices we haven't processed yet
+    lineOps.sort((a,b) => {
+      const sa = a.type==='insert_after' ? a.at : (a.type==='insert_before' ? a.at : a.start);
+      const sb = b.type==='insert_after' ? b.at : (b.type==='insert_before' ? b.at : b.start);
+      return sb - sa;
+    });
+
+    for(const op of lineOps){
+      if(op.type === 'replace'){
+        if(op.start < 1 || op.end > total || op.start > op.end){
+          warnings.push('REPLACE ' + op.start + (op.end!==op.start?('-'+op.end):'') + ' is out of range for a ' + total + '-line file — skipped.');
+          continue;
+        }
+        lines.splice(op.start-1, op.end-op.start+1, ...op.content.split('\n'));
+      } else if(op.type === 'insert_after'){
+        if(op.at < 0 || op.at > total){
+          warnings.push('INSERT_AFTER ' + op.at + ' is out of range for a ' + total + '-line file — skipped.');
+          continue;
+        }
+        lines.splice(op.at, 0, ...op.content.split('\n'));
+      } else if(op.type === 'insert_before'){
+        if(op.at < 1 || op.at > total+1){
+          warnings.push('INSERT_BEFORE ' + op.at + ' is out of range for a ' + total + '-line file — skipped.');
+          continue;
+        }
+        lines.splice(op.at-1, 0, ...op.content.split('\n'));
+      } else if(op.type === 'delete'){
+        if(op.start < 1 || op.end > total || op.start > op.end){
+          warnings.push('DELETE ' + op.start + (op.end!==op.start?('-'+op.end):'') + ' is out of range for a ' + total + '-line file — skipped.');
+          continue;
+        }
+        lines.splice(op.start-1, op.end-op.start+1);
+      }
+    }
+
+    let text = lines.join('\n');
+
+    for(const op of ops.filter(o=>o.type==='find_replace')){
+      if(text.indexOf(op.find) === -1){
+        warnings.push('FIND block not found in file (first 40 chars: "' + op.find.slice(0,40).replace(/\n/g,'\\n') + '...") — skipped.');
+        continue;
+      }
+      text = text.replace(op.find, () => op.withText); // function form avoids $-pattern interpretation
+    }
+
+    for(const op of ops.filter(o=>o.type==='prepend')){
+      text = op.content + '\n' + text;
+    }
+    for(const op of ops.filter(o=>o.type==='append')){
+      text = text + '\n' + op.content;
+    }
+
+    return {text, warnings};
+  }
+
+  // ---------------- Simple LCS line diff for display ----------------
+  function diffLines(a, b){
+    const n = a.length, m = b.length;
+    const dp = Array.from({length:n+1}, ()=> new Int32Array(m+1));
+    for(let i=n-1;i>=0;i--){
+      for(let j=m-1;j>=0;j--){
+        dp[i][j] = a[i]===b[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j], dp[i][j+1]);
+      }
+    }
+    const out = [];
+    let i=0, j=0;
+    while(i<n && j<m){
+      if(a[i]===b[j]){ out.push({t:'ctx', v:a[i]}); i++; j++; }
+      else if(dp[i+1][j] >= dp[i][j+1]){ out.push({t:'del', v:a[i]}); i++; }
+      else { out.push({t:'add', v:b[j]}); j++; }
+    }
+    while(i<n){ out.push({t:'del', v:a[i]}); i++; }
+    while(j<m){ out.push({t:'add', v:b[j]}); j++; }
+    return out;
+  }
+
+  function renderDiff(oldText, newText){
+    const rows = diffLines(oldText.split('\n'), newText.split('\n'));
+    const html = rows.map(r=>{
+      const marker = r.t==='add' ? '+' : r.t==='del' ? '−' : '·';
+      const cls = r.t;
+      const esc = r.v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return '<div class="drow ' + cls + '"><div class="m">' + marker + '</div><div class="c">' + (esc===''?' ':esc) + '</div></div>';
+    }).join('');
+    diffOutput.innerHTML = html || '<div class="empty-state">No changes.</div>';
+  }
+
+  function clearMessages(){ messages.innerHTML = ''; }
+  function showErrors(list){
+    const box = document.createElement('div');
+    box.className = 'warnbox';
+    box.textContent = 'Patch script problems:\n' + list.map(e=>'• '+e).join('\n');
+    messages.appendChild(box);
+  }
+  function showWarnings(list){
+    const box = document.createElement('div');
+    box.className = 'warnbox';
+    box.textContent = 'Applied with warnings:\n' + list.map(e=>'• '+e).join('\n');
+    messages.appendChild(box);
+  }
+  function showOk(text){
+    const box = document.createElement('div');
+    box.className = 'okbox';
+    box.textContent = text;
+    messages.appendChild(box);
+  }
+
+  $('applyBtn').addEventListener('click', ()=>{
+    clearMessages();
+    const original = origInput.value;
+    const script = patchInput.value;
+    if(!original.trim()){ showErrors(['Paste your original file in panel 1 first.']); return; }
+    if(!script.trim()){ showErrors(['Paste a patch script in panel 2 first.']); return; }
+
+    const {ops, errors} = parsePatch(script);
+    if(errors.length){ showErrors(errors); if(ops.length===0) return; }
+    if(ops.length === 0){ showErrors(['No valid commands found in the patch script.']); return; }
+
+    const {text, warnings} = applyPatch(original, ops);
+    if(warnings.length) showWarnings(warnings);
+
+    lastResultText = text;
+    const newLineCount = text.split('\n').length;
+    resultCount.textContent = newLineCount + ' lines';
+    renderDiff(original, text);
+    resultBtns.style.display = 'flex';
+    if(!warnings.length) showOk('Applied ' + ops.length + ' command' + (ops.length===1?'':'s') + ' successfully.');
+  });
+
+  $('copyResultBtn').addEventListener('click', ()=>{
+    if(lastResultText===null){ showToast('Nothing to copy yet'); return; }
+    copyText(lastResultText, 'Final file copied to clipboard');
+  });
+
+  $('downloadBtn').addEventListener('click', ()=>{
+    if(lastResultText===null) return;
+    const blob = new Blob([lastResultText], {type:'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'patched-file.html';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  $('useAsOrigBtn').addEventListener('click', ()=>{
+    if(lastResultText===null) return;
+    origInput.value = lastResultText;
+    updateGutter();
+    patchInput.value = '';
+    countCommands();
+    diffOutput.innerHTML = '<div class="empty-state">Apply a patch to see the result here.</div>';
+    resultCount.textContent = '';
+    resultBtns.style.display = 'none';
+    clearMessages();
+    showToast('Result moved to panel 1 — ready for the next patch');
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+})();
+</script>
+</body>
+</html>
