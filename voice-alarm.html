@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voice Alarm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14110F;
+    --panel:#1E1A16;
+    --panel-2:#262019;
+    --amber:#E8A33D;
+    --teal:#4FA8A0;
+    --cream:#F2EAE0;
+    --dim:#8A8175;
+    --danger:#C4543A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--cream);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:24px 16px 80px;
+  }
+  .wrap{width:100%;max-width:480px;}
+  header{margin-bottom:24px;}
+  .eyebrow{
+    font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--teal);
+    display:flex;align-items:center;gap:8px;margin-bottom:6px;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);}
+  h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;margin:0;letter-spacing:-0.01em;}
+  .clock{
+    font-family:'Space Grotesk',sans-serif;font-size:50px;font-weight:700;letter-spacing:0.02em;
+    color:var(--amber);margin:16px 0 2px;font-variant-numeric:tabular-nums;
+  }
+  .clock-sub{color:var(--dim);font-size:13px;margin-bottom:8px;}
+
+  .card{background:var(--panel);border:1px solid #2C261E;border-radius:14px;padding:20px;margin-bottom:16px;}
+  .card h2{font-family:'Space Grotesk',sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;color:var(--dim);margin:0;}
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+
+  label{display:block;font-size:13px;color:var(--dim);margin-bottom:6px;}
+  input[type="text"], input[type="time"], input[type="number"], select, textarea{
+    width:100%;background:var(--panel-2);border:1px solid #3A3226;color:var(--cream);
+    padding:11px 12px;border-radius:8px;font-family:'Inter',sans-serif;font-size:15px;margin-bottom:14px;
+  }
+  textarea{resize:vertical;min-height:60px;}
+  input:focus, select:focus, textarea:focus{outline:2px solid var(--amber);outline-offset:1px;}
+  .row{display:flex;gap:10px;}
+  .row > *{flex:1;}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+  .chip{
+    background:var(--panel-2);border:1px solid #3A3226;color:var(--dim);
+    padding:6px 10px;border-radius:20px;font-size:12px;cursor:pointer;user-select:none;
+  }
+  .chip.active{background:rgba(232,163,61,0.15);border-color:var(--amber);color:var(--amber);}
+  .chip.teal.active{background:rgba(79,168,160,0.18);border-color:var(--teal);color:var(--teal);}
+
+  button{font-family:'Inter',sans-serif;font-weight:600;font-size:14px;border:none;border-radius:8px;padding:12px 16px;cursor:pointer;}
+  .btn-primary{background:var(--amber);color:#1A1408;width:100%;}
+  .btn-primary:active{opacity:0.85;}
+  .btn-ghost{background:transparent;border:1px solid #3A3226;color:var(--dim);}
+  .btn-ghost:hover{color:var(--cream);}
+  .btn-sm{padding:7px 12px;font-size:12px;}
+
+  .alarm-item{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid #2C261E;}
+  .alarm-item:first-child{border-top:none;}
+  .alarm-time{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;}
+  .alarm-time.off{color:var(--dim);}
+  .alarm-time.interval{color:var(--teal);}
+  .alarm-msg{font-size:13px;color:var(--dim);margin-top:2px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .alarm-repeat{font-size:11px;color:var(--teal);margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;}
+  .alarm-item.interval .alarm-repeat{color:var(--amber);}
+  .alarm-next{font-size:12px;color:var(--dim);margin-top:4px;font-variant-numeric:tabular-nums;}
+  .alarm-actions{display:flex;align-items:center;gap:10px;}
+
+  .switch{position:relative;width:40px;height:22px;flex-shrink:0;}
+  .switch input{display:none;}
+  .slider{position:absolute;inset:0;background:#3A3226;border-radius:20px;transition:0.15s;}
+  .slider::before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:var(--dim);border-radius:50%;transition:0.15s;}
+  input:checked + .slider{background:rgba(232,163,61,0.25);}
+  input:checked + .slider::before{transform:translateX(18px);background:var(--amber);}
+
+  .icon-btn{background:transparent;border:none;color:var(--dim);font-size:16px;padding:4px;}
+  .icon-btn:hover{color:var(--danger);}
+  .empty{color:var(--dim);font-size:13px;text-align:center;padding:20px 0;}
+
+  .status-line{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim);margin-top:-6px;margin-bottom:14px;}
+  .status-line.warn{color:var(--danger);}
+
+  /* Timeline strip */
+  .strip-range{font-size:12px;color:var(--dim);margin-bottom:10px;}
+  .strip-container{
+    position:relative;height:340px;overflow-y:auto;overflow-x:hidden;
+    border:1px solid #2C261E;border-radius:10px;background:var(--panel-2);
+    cursor:crosshair;padding-top:16px;
+  }
+  .strip-rail{position:relative;width:100%;min-height:100%;}
+  .strip-line{position:absolute;left:64px;top:0;bottom:0;width:2px;background:#3A3226;}
+  .strip-tick{position:absolute;left:0;right:0;height:1px;}
+  .strip-tick .t-label{
+    position:absolute;left:0;top:-6px;width:52px;text-align:right;font-size:9px;color:#5A5142;
+    font-variant-numeric:tabular-nums;
+  }
+  .strip-tick .t-label.major-label{font-size:11px;color:var(--dim);top:-7px;}
+  .strip-tick .t-mark{position:absolute;left:60px;top:0;width:8px;height:1px;background:#3A3226;}
+  .strip-tick.major .t-mark{width:10px;background:#4A4030;}
+  .strip-now{position:absolute;left:0;right:0;top:0;z-index:3;}
+  .strip-now .now-dot{
+    position:absolute;left:60px;top:-4px;width:8px;height:8px;border-radius:50%;
+    background:var(--amber);box-shadow:0 0 0 3px rgba(232,163,61,0.25);animation:pulse 1.4s infinite;
+  }
+  .strip-now .now-label{
+    position:absolute;left:74px;top:-6px;font-size:11px;color:var(--amber);font-weight:600;letter-spacing:0.05em;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+  .strip-marker{
+    position:absolute;left:60px;top:-6px;width:12px;height:12px;z-index:2;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .strip-marker .shape{width:10px;height:10px;background:var(--amber);}
+  .strip-marker.fixed .shape{border-radius:3px;}
+  .strip-marker.interval .shape{border-radius:50%;background:var(--teal);}
+  .strip-marker .m-label{
+    position:absolute;left:16px;top:-3px;font-size:10px;color:var(--cream);background:var(--panel);
+    padding:1px 5px;border-radius:4px;white-space:nowrap;border:1px solid #3A3226;
+  }
+  .strip-select{position:absolute;left:0;right:0;top:0;z-index:4;}
+  .strip-select .sel-line{position:absolute;left:0;right:0;top:0;height:1px;background:var(--danger);opacity:0.7;pointer-events:none;}
+  .strip-select .sel-label{
+    position:absolute;left:74px;top:-8px;font-size:11px;color:var(--danger);font-weight:600;
+    background:var(--panel);padding:1px 6px;border-radius:4px;pointer-events:none;
+  }
+  .sel-handle{
+    position:absolute;left:56px;top:-10px;width:20px;height:20px;border-radius:50%;
+    background:var(--danger);border:2px solid var(--cream);touch-action:none;cursor:grab;z-index:5;
+  }
+  .sel-handle:active{cursor:grabbing;}
+  .time-adjust-row{display:flex;align-items:center;gap:10px;margin:-6px 0 14px;}
+  .time-adjust-row .adjust-btn{width:34px;height:34px;}
+  .time-adjust-hint{font-size:11px;color:var(--dim);}
+  .adjust-btn{
+    background:var(--panel);border:1px solid #3A3226;color:var(--cream);
+    width:32px;height:32px;padding:0;font-size:12px;border-radius:6px;
+  }
+  .adjust-btn:hover{border-color:var(--amber);color:var(--amber);}
+
+  .overlay{
+    position:fixed;inset:0;background:rgba(20,17,15,0.97);display:none;flex-direction:column;
+    align-items:center;justify-content:center;z-index:50;padding:24px;text-align:center;
+  }
+  .overlay.show{display:flex;}
+  .on-air{
+    font-family:'Space Grotesk',sans-serif;font-size:13px;letter-spacing:0.2em;color:var(--danger);
+    border:1px solid var(--danger);border-radius:20px;padding:6px 16px;margin-bottom:20px;animation:pulse 1.2s infinite;
+  }
+  .overlay .time{font-family:'Space Grotesk',sans-serif;font-size:42px;font-weight:700;color:var(--amber);margin-bottom:10px;}
+  .overlay .msg{font-size:18px;max-width:400px;line-height:1.5;margin-bottom:32px;color:var(--cream);}
+  .overlay-actions{display:flex;gap:12px;}
+  .overlay-actions button{padding:14px 28px;}
+
+  footer{margin-top:24px;font-size:12px;color:var(--dim);line-height:1.6;text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow"><span class="dot"></span>Voice Alarm</div>
+    <h1>Spoken reminders, on time</h1>
+    <div class="clock" id="liveClock">--:--:--</div>
+    <div class="clock-sub" id="liveDate">—</div>
+    <div class="status-line" id="wakeStatus" style="margin-top:8px;">○ Checking screen wake lock…</div>
+  </header>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Timeline</h2>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-ghost btn-sm" id="extendStripBtn">+2h</button>
+        <button class="btn-ghost btn-sm" id="resetStripBtn">Reset</button>
+      </div>
+    </div>
+    <div class="strip-range" id="stripRangeLabel">Next 60 min · tap or drag the handle</div>
+    <div class="strip-container" id="stripContainer">
+      <div class="strip-rail" id="stripRail">
+        <div class="strip-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>New Alarm</h2></div>
+
+    <label>Alarm type</label>
+    <div class="chips" id="typeChips">
+      <div class="chip active" data-val="fixed">Fixed time</div>
+      <div class="chip teal" data-val="interval">Every X minutes</div>
+    </div>
+
+    <div id="fixedFields">
+      <div class="row">
+        <div>
+          <label for="timeInput">Time</label>
+          <input type="time" id="timeInput" step="1">
+        </div>
+        <div>
+          <label for="voiceSelect">Voice</label>
+          <select id="voiceSelect"></select>
+        </div>
+      </div>
+      <div class="time-adjust-row">
+        <button class="icon-btn adjust-btn" id="selDownBtn" title="-1 min">▼</button>
+        <button class="icon-btn adjust-btn" id="selUpBtn" title="+1 min">▲</button>
+        <span class="time-adjust-hint">fine-tune by 1 min · or drag the handle on the timeline</span>
+      </div>
+      <label>Repeat</label>
+      <div class="chips" id="repeatChips">
+        <div class="chip active" data-val="once">Once</div>
+        <div class="chip" data-val="daily">Daily</div>
+        <div class="chip" data-val="weekdays">Weekdays</div>
+        <div class="chip" data-val="weekends">Weekends</div>
+      </div>
+    </div>
+
+    <div id="intervalFields" style="display:none;">
+      <div class="row">
+        <div>
+          <label for="intervalMinutes">Ring every</label>
+          <div class="row" style="gap:6px;margin-bottom:14px;">
+            <input type="number" id="intervalMinutes" min="0" value="5" style="margin-bottom:0;" placeholder="min">
+            <input type="number" id="intervalSeconds" min="0" max="59" value="0" style="margin-bottom:0;" placeholder="sec">
+          </div>
+        </div>
+        <div>
+          <label for="voiceSelectInterval">Voice</label>
+          <select id="voiceSelectInterval"></select>
+        </div>
+      </div>
+      <label>Repeat</label>
+      <div class="chips" id="intervalRepeatChips">
+        <div class="chip teal active" data-val="infinite">Until stopped</div>
+        <div class="chip teal" data-val="count">Fixed number of times</div>
+      </div>
+      <div id="intervalCountWrap" style="display:none;">
+        <label for="intervalCount">Number of iterations</label>
+        <input type="number" id="intervalCount" min="1" value="5">
+      </div>
+    </div>
+
+    <label for="offsetSeconds">Delay first ring by (seconds)</label>
+    <input type="number" id="offsetSeconds" min="0" max="59" value="0">
+    <div class="time-adjust-hint" style="margin:-10px 0 14px;">Useful when two alarms land on the same moment — offsets just this alarm's very first ring so they don't collide. Every ring after that follows the normal schedule.</div>
+
+    <label for="msgInput">What should it say?</label>
+    <textarea id="msgInput" placeholder="Time to take your medication.">Time to get up.</textarea>
+
+    <div class="row">
+      <button class="btn-ghost" id="testBtn">▶ Preview voice</button>
+      <button class="btn-primary" id="addBtn">Set Alarm</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Scheduled</h2>
+    <div id="alarmList"><div class="empty">No alarms yet — add one above.</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Background Keep-Alive <span style="color:var(--dim);text-transform:none;letter-spacing:0;">(experimental)</span></h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0;">
+      <div>
+        <div style="font-size:14px;">Play a silent audio loop</div>
+        <div style="font-size:12px;color:var(--dim);margin-top:2px;max-width:300px;">
+          Keeps an active "media session" running so the OS is less likely to fully suspend this tab when backgrounded. Works alongside the screen wake lock above.
+        </div>
+      </div>
+      <label class="switch" style="flex-shrink:0;margin-left:12px;">
+        <input type="checkbox" id="keepAliveToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="status-line" id="keepAliveStatus">○ Off</div>
+  </div>
+
+  <div class="status-line warn" id="permWarn" style="display:none;">
+    ⚠ Keep this tab open and the screen unlocked — alarms won't fire if the tab is closed or the browser is backgrounded on mobile.
+  </div>
+
+  <footer>
+    Alarms live only in this browser tab's memory — refreshing the page clears them. Best used on a laptop/desktop tab, or a spare phone left open and charging.
+  </footer>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="on-air">● ON AIR</div>
+  <div class="time" id="overlayTime">--:--</div>
+  <div class="msg" id="overlayMsg"></div>
+  <div class="overlay-actions">
+    <button class="btn-ghost" id="snoozeBtn" style="color:var(--cream);">Snooze 5 min</button>
+    <button class="btn-primary" id="stopBtn">Stop</button>
+  </div>
+</div>
+
+<script>
+/* ===================== State ===================== */
+let alarms = []; // fixed: {id,kind:'fixed',time,repeat,message,voiceIdx,enabled,lastFiredKey}
+                  // interval: {id,kind:'interval',intervalMinutes,repeatMode,maxCount,firedCount,nextFireAt,message,voiceIdx,enabled}
+let nextId = 1;
+let voices = [];
+let firing = null;
+let speakTimeout = null;
+let selectedType = 'fixed';
+let selectedRepeat = 'once';
+let selectedIntervalRepeat = 'infinite';
+let extraStripMinutes = 0;
+let selectedStripDate = null; // absolute Date object of the picked point on the strip
+let lastFullRender = 0;
+let isDraggingHandle = false;
+
+const clockEl = document.getElementById('liveClock');
+const dateEl = document.getElementById('liveDate');
+const listEl = document.getElementById('alarmList');
+const voiceSelect = document.getElementById('voiceSelect');
+const voiceSelectInterval = document.getElementById('voiceSelectInterval');
+const overlay = document.getElementById('overlay');
+const permWarn = document.getElementById('permWarn');
+const stripContainer = document.getElementById('stripContainer');
+const stripRail = document.getElementById('stripRail');
+const stripRangeLabel = document.getElementById('stripRangeLabel');
+const PX_PER_MIN = 6;
+const RAIL_TOP_PAD = 16; // keeps the NOW row clear of the container's top clip edge
+
+/* ===================== Voices ===================== */
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  if(!voices.length) return;
+  [voiceSelect, voiceSelectInterval].forEach(sel => {
+    const prev = sel.value;
+    sel.innerHTML = '';
+    voices.forEach((v,i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${v.name} (${v.lang})`;
+      sel.appendChild(opt);
+    });
+    const enIdx = voices.findIndex(v => v.lang && v.lang.startsWith('en'));
+    sel.value = prev || (enIdx >= 0 ? enIdx : 0);
+  });
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text, voiceIdx, cb){
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  if(voices[voiceIdx]) utter.voice = voices[voiceIdx];
+  utter.rate = 1;
+  utter.onend = cb || null;
+  speechSynthesis.speak(utter);
+}
+
+/* ===================== Form: alarm type toggle ===================== */
+document.getElementById('typeChips').addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  [...e.currentTarget.children].forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  selectedType = chip.dataset.val;
+  document.getElementById('fixedFields').style.display = selectedType === 'fixed' ? 'block' : 'none';
+  document.getElementById('intervalFields').style.display = selectedType === 'interval' ? 'block' : 'none';
+});
+
+document.getElementById('repeatChips').addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  [...e.currentTarget.children].forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  selectedRepeat = chip.dataset.val;
+});
+
+document.getElementById('intervalRepeatChips').addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  [...e.currentTarget.children].forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  selectedIntervalRepeat = chip.dataset.val;
+  document.getElementById('intervalCountWrap').style.display = selectedIntervalRepeat === 'count' ? 'block' : 'none';
+});
+
+document.getElementById('testBtn').addEventListener('click', () => {
+  const msg = document.getElementById('msgInput').value.trim() || 'This is a test of your voice alarm.';
+  const vIdx = selectedType === 'fixed' ? voiceSelect.value : voiceSelectInterval.value;
+  speak(msg, vIdx);
+});
+
+/* ===================== Add alarm ===================== */
+document.getElementById('addBtn').addEventListener('click', () => {
+  const message = document.getElementById('msgInput').value.trim();
+  if(!message){ document.getElementById('msgInput').focus(); return; }
+  const offsetSec = Math.max(0, Math.min(59, parseInt(document.getElementById('offsetSeconds').value, 10) || 0));
+
+  if(selectedType === 'fixed'){
+    const rawTime = document.getElementById('timeInput').value;
+    if(!rawTime){ document.getElementById('timeInput').focus(); return; }
+    const time = normalizeTimeStr(rawTime);
+    alarms.push({
+      id: nextId++, kind:'fixed', time, repeat: selectedRepeat, offsetSec,
+      message, voiceIdx: voiceSelect.value, enabled:true, lastFiredKey:null
+    });
+  } else {
+    const mins = Math.max(0, parseInt(document.getElementById('intervalMinutes').value, 10) || 0);
+    const secs = Math.max(0, Math.min(59, parseInt(document.getElementById('intervalSeconds').value, 10) || 0));
+    const intervalMs = Math.max(1000, mins*60000 + secs*1000); // at least 1 second
+    const repeatMode = selectedIntervalRepeat;
+    const maxCount = repeatMode === 'count' ? Math.max(1, parseInt(document.getElementById('intervalCount').value,10) || 1) : null;
+    alarms.push({
+      id: nextId++, kind:'interval', intervalMs, repeatMode, maxCount, firedCount:0, offsetSec, hasFiredOnce:false,
+      nextFireAt: Date.now() + intervalMs + offsetSec*1000,
+      message, voiceIdx: voiceSelectInterval.value, enabled:true
+    });
+  }
+  renderAlarms();
+  renderStrip();
+  permWarn.style.display = 'flex';
+});
+
+function repeatLabel(r){
+  return {once:'Once', daily:'Daily', weekdays:'Weekdays', weekends:'Weekends'}[r] || r;
+}
+
+/* ===================== Render alarm list ===================== */
+function renderAlarms(){
+  if(alarms.length === 0){
+    listEl.innerHTML = '<div class="empty">No alarms yet — add one above.</div>';
+    return;
+  }
+  const sorted = [...alarms].sort((a,b) => {
+    const ta = a.kind === 'fixed' ? a.time : '99:99';
+    const tb = b.kind === 'fixed' ? b.time : '99:99';
+    return ta.localeCompare(tb);
+  });
+  listEl.innerHTML = '';
+  const now = new Date();
+  sorted.forEach(a => {
+    const item = document.createElement('div');
+    item.className = 'alarm-item ' + (a.kind === 'interval' ? 'interval' : '');
+    if(a.kind === 'fixed'){
+      const offsetBadge = (a.lastFiredKey === null && a.offsetSec) ? ` · first ring +${a.offsetSec}s` : '';
+      const nextLine = a.enabled ? `<div class="alarm-next">${formatNextRing(nextFixedOccurrence(a, now), now)}</div>` : '';
+      item.innerHTML = `
+        <div>
+          <div class="alarm-time ${a.enabled ? '' : 'off'}">${formatHMS(a.time)}</div>
+          <div class="alarm-msg">${escapeHtml(a.message)}</div>
+          <div class="alarm-repeat">${repeatLabel(a.repeat)}${offsetBadge}</div>
+          ${nextLine}
+        </div>
+        ${alarmActionsHtml(a)}
+      `;
+    } else {
+      const progress = a.repeatMode === 'count' ? `${a.firedCount}/${a.maxCount}` : '∞';
+      const offsetBadge = (!a.hasFiredOnce && a.offsetSec) ? ` · first ring +${a.offsetSec}s` : '';
+      const nextLine = a.enabled ? `<div class="alarm-next">${formatNextRing(new Date(a.nextFireAt), now)}</div>` : '';
+      item.innerHTML = `
+        <div>
+          <div class="alarm-time interval ${a.enabled ? '' : 'off'}">every ${formatInterval(a.intervalMs)}</div>
+          <div class="alarm-msg">${escapeHtml(a.message)}</div>
+          <div class="alarm-repeat">${progress} rings${offsetBadge}</div>
+          ${nextLine}
+        </div>
+        ${alarmActionsHtml(a)}
+      `;
+    }
+    listEl.appendChild(item);
+  });
+
+  listEl.querySelectorAll('.toggle').forEach(t => {
+    t.addEventListener('change', (e) => {
+      const id = Number(e.target.dataset.id);
+      const a = alarms.find(x => x.id === id);
+      if(a){
+        a.enabled = e.target.checked;
+        if(a.kind === 'interval' && a.enabled){
+          const offsetMs = a.hasFiredOnce ? 0 : (a.offsetSec || 0) * 1000;
+          a.nextFireAt = Date.now() + a.intervalMs + offsetMs;
+        }
+      }
+      renderStrip();
+    });
+  });
+  listEl.querySelectorAll('.icon-btn').forEach(b => {
+    b.addEventListener('click', (e) => {
+      const id = Number(e.target.dataset.id);
+      alarms = alarms.filter(x => x.id !== id);
+      renderAlarms();
+      renderStrip();
+    });
+  });
+}
+
+function alarmActionsHtml(a){
+  return `
+    <div class="alarm-actions">
+      <label class="switch">
+        <input type="checkbox" ${a.enabled ? 'checked' : ''} data-id="${a.id}" class="toggle">
+        <span class="slider"></span>
+      </label>
+      <button class="icon-btn" data-id="${a.id}" title="Delete">✕</button>
+    </div>
+  `;
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
+// Shift a "HH:MM:SS" string forward by N seconds, wrapping across midnight if needed
+function shiftTimeStr(timeStr, addSec){
+  if(!addSec) return timeStr;
+  const [hh, mm, ss] = timeStr.split(':').map(Number);
+  let total = hh*3600 + mm*60 + ss + addSec;
+  total = ((total % 86400) + 86400) % 86400;
+  const h2 = Math.floor(total/3600), m2 = Math.floor((total%3600)/60), s2 = total%60;
+  return `${pad(h2)}:${pad(m2)}:${pad(s2)}`;
+}
+
+// Accepts "HH:MM" or "HH:MM:SS" (native time input may omit seconds on some browsers) and
+// always returns a canonical "HH:MM:SS" string, since alarms now fire at second precision.
+function normalizeTimeStr(val){
+  const parts = (val || '00:00:00').split(':').map(Number);
+  const hh = parts[0] || 0, mm = parts[1] || 0, ss = parts[2] || 0;
+  return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
+}
+
+// Display helper: show seconds only when they're non-zero, to keep the common case tidy
+function formatHMS(timeStr){
+  const [hh, mm, ss] = timeStr.split(':');
+  return (Number(ss) === 0) ? `${hh}:${mm}` : `${hh}:${mm}:${ss}`;
+}
+
+// Format an interval duration (ms) as "5m", "1m 30s", or "45s"
+function formatInterval(ms){
+  const totalSec = Math.round(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  if(m > 0 && s > 0) return `${m}m ${s}s`;
+  if(m > 0) return `${m}m`;
+  return `${s}s`;
+}
+
+function dayMatches(repeat, dow){
+  if(repeat === 'daily') return true;
+  if(repeat === 'weekdays') return dow >= 1 && dow <= 5;
+  if(repeat === 'weekends') return dow === 0 || dow === 6;
+  return true;
+}
+
+// Computes the next absolute Date a fixed-time alarm will ring, honoring the
+// first-ring offset (only applies before it's ever fired) and repeat pattern.
+function nextFixedOccurrence(a, now){
+  const effectiveTimeStr = (a.lastFiredKey === null && a.offsetSec) ? shiftTimeStr(a.time, a.offsetSec) : a.time;
+  let candidate = new Date(now);
+  const [hh, mm, ssPart] = effectiveTimeStr.split(':').map(Number);
+  candidate.setHours(hh, mm, ssPart || 0, 0);
+  if(candidate < now) candidate = new Date(candidate.getTime() + 24*3600000);
+  if(a.repeat !== 'once'){
+    let guard = 0;
+    while(!dayMatches(a.repeat, candidate.getDay()) && guard < 8){
+      candidate = new Date(candidate.getTime() + 24*3600000);
+      guard++;
+    }
+  }
+  return candidate;
+}
+
+// "Next: 07:00:00" for today, "Next: Mon 07:00:00" if it lands on a different day
+function formatNextRing(date, now){
+  const timeStr = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  if(date.toDateString() === now.toDateString()) return `Next: ${timeStr}`;
+  return `Next: ${date.toLocaleDateString(undefined,{weekday:'short'})} ${timeStr}`;
+}
+
+/* ===================== Main tick: clock + alarm checking ===================== */
+function tick(){
+  const now = new Date();
+  clockEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  dateEl.textContent = now.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
+
+  if(!firing){
+    const hh = pad(now.getHours());
+    const mm = pad(now.getMinutes());
+    const ss = pad(now.getSeconds());
+    const nowKey = `${now.toDateString()}_${hh}:${mm}:${ss}`;
+    const curTime = `${hh}:${mm}:${ss}`;
+    let didFire = false;
+
+    // Fixed-time alarms
+    for(const a of alarms){
+      if(a.kind !== 'fixed' || !a.enabled) continue;
+      const effectiveTime = (a.lastFiredKey === null && a.offsetSec) ? shiftTimeStr(a.time, a.offsetSec) : a.time;
+      if(effectiveTime !== curTime) continue;
+      if(a.lastFiredKey === nowKey) continue;
+      if(a.repeat !== 'once' && !dayMatches(a.repeat, now.getDay())) continue;
+      a.lastFiredKey = nowKey;
+      fireAlarm(a.time, a.message, a.voiceIdx, a);
+      if(a.repeat === 'once') a.enabled = false;
+      didFire = true;
+      break;
+    }
+
+    // Interval alarms
+    if(!didFire){
+      for(const a of alarms){
+        if(a.kind !== 'interval' || !a.enabled) continue;
+        if(Date.now() < a.nextFireAt) continue;
+        const displayTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        fireAlarm(displayTime, a.message, a.voiceIdx, a);
+        a.firedCount++;
+        a.hasFiredOnce = true;
+        a.nextFireAt = Date.now() + a.intervalMs;
+        if(a.repeatMode === 'count' && a.firedCount >= a.maxCount) a.enabled = false;
+        didFire = true;
+        break;
+      }
+    }
+    if(didFire){ renderAlarms(); renderStrip(); }
+  }
+
+  renderStripPositionsOnly();
+}
+
+function fireAlarm(displayTime, message, voiceIdx, ref){
+  firing = { message, voiceIdx, ref };
+  document.getElementById('overlayTime').textContent = displayTime;
+  document.getElementById('overlayMsg').textContent = message;
+  overlay.classList.add('show');
+  loopSpeak();
+}
+
+function loopSpeak(){
+  if(!firing) return;
+  speak(firing.message, firing.voiceIdx, () => {
+    if(firing) speakTimeout = setTimeout(loopSpeak, 1500);
+  });
+}
+
+function stopFiring(){
+  speechSynthesis.cancel();
+  clearTimeout(speakTimeout);
+  firing = null;
+  overlay.classList.remove('show');
+}
+
+document.getElementById('stopBtn').addEventListener('click', stopFiring);
+document.getElementById('snoozeBtn').addEventListener('click', () => {
+  if(!firing) return;
+  const ref = firing;
+  stopFiring();
+  const snoozeTime = new Date(Date.now() + 5*60000);
+  alarms.push({
+    id: nextId++, kind:'fixed',
+    time: `${pad(snoozeTime.getHours())}:${pad(snoozeTime.getMinutes())}`,
+    repeat:'once', message: ref.message, voiceIdx: ref.voiceIdx, enabled:true, lastFiredKey:null
+  });
+  renderAlarms();
+  renderStrip();
+});
+
+setInterval(tick, 1000);
+tick();
+
+/* ===================== Timeline strip ===================== */
+
+function getStripEnd(now){
+  const nextHour = new Date(now);
+  nextHour.setMinutes(0,0,0);
+  nextHour.setHours(nextHour.getHours()+1);
+  return new Date(nextHour.getTime() + extraStripMinutes*60000);
+}
+
+function yFor(minutesFromNow){
+  return (minutesFromNow * PX_PER_MIN) + RAIL_TOP_PAD;
+}
+
+function renderStrip(){
+  const now = new Date();
+  const end = getStripEnd(now);
+  const durationMin = Math.max(10, Math.round((end - now)/60000));
+  stripRail.style.height = (durationMin * PX_PER_MIN + RAIL_TOP_PAD + 12) + 'px';
+  stripRangeLabel.textContent = `Next ${durationMin} min · tap or drag the handle`;
+
+  // clear old dynamic children (keep the vertical line)
+  [...stripRail.querySelectorAll('.strip-tick, .strip-marker, .strip-now, .strip-select')].forEach(el => el.remove());
+
+  // now marker
+  const nowEl = document.createElement('div');
+  nowEl.className = 'strip-now';
+  nowEl.style.top = yFor(0) + 'px';
+  nowEl.innerHTML = `<div class="now-dot"></div><div class="now-label">NOW ${pad(now.getHours())}:${pad(now.getMinutes())}</div>`;
+  stripRail.appendChild(nowEl);
+
+  // tick marks every 5 min, labeled every 15 min
+  let t = new Date(now);
+  t.setSeconds(0,0);
+  t.setMinutes(Math.ceil(t.getMinutes()/5)*5);
+  let i = 0;
+  while(t <= end){
+    const minutesFromNow = (t - now)/60000;
+    const tickEl = document.createElement('div');
+    const major = t.getMinutes() % 15 === 0;
+    tickEl.className = 'strip-tick' + (major ? ' major' : '');
+    tickEl.style.top = yFor(minutesFromNow) + 'px';
+    tickEl.innerHTML = `<div class="t-mark"></div><div class="t-label${major ? ' major-label' : ''}">${pad(t.getHours())}:${pad(t.getMinutes())}</div>`;
+    stripRail.appendChild(tickEl);
+    t = new Date(t.getTime() + 5*60000);
+    i++;
+    if(i > 300) break; // safety cap
+  }
+
+  // fixed-time alarm markers (occurrence within window)
+  alarms.forEach(a => {
+    if(!a.enabled) return;
+    if(a.kind === 'fixed'){
+      const candidate = nextFixedOccurrence(a, now);
+      if(candidate >= now && candidate <= end){
+        const label = `${pad(candidate.getHours())}:${pad(candidate.getMinutes())}:${pad(candidate.getSeconds())}`;
+        addStripMarker(candidate, now, 'fixed', formatHMS(label));
+      }
+    } else if(a.kind === 'interval'){
+      let occ = new Date(a.nextFireAt);
+      let count = 0;
+      const remaining = a.repeatMode === 'count' ? (a.maxCount - a.firedCount) : Infinity;
+      while(occ <= end && count < remaining){
+        addStripMarker(occ, now, 'interval', `${pad(occ.getHours())}:${pad(occ.getMinutes())}`);
+        occ = new Date(occ.getTime() + a.intervalMs);
+        count++;
+        if(count > 200) break;
+      }
+    }
+  });
+
+  renderStripSelection();
+}
+
+function addStripMarker(dateObj, now, kind, label){
+  const minutesFromNow = (dateObj - now)/60000;
+  const el = document.createElement('div');
+  el.className = `strip-marker ${kind}`;
+  el.style.top = yFor(minutesFromNow) + 'px';
+  el.title = label;
+  el.innerHTML = `<div class="shape"></div><div class="m-label">${label}</div>`;
+  stripRail.appendChild(el);
+}
+
+// Lightweight per-second reposition without full rebuild (keeps "now" accurate between full rerenders)
+function renderStripPositionsOnly(){
+  const nowMs = Date.now();
+  if(nowMs - lastFullRender > 4000 && !isDraggingHandle){
+    lastFullRender = nowMs;
+    renderStrip();
+  }
+}
+
+// Label for a duration-from-now selection, e.g. "+1m 30s" or "+45s"
+function intervalDiffLabel(minutesFromNow){
+  const totalSec = Math.max(1, Math.round(minutesFromNow * 60));
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return m > 0 ? (s > 0 ? `+${m}m ${s}s` : `+${m}m`) : `+${s}s`;
+}
+
+function renderStripSelection(){
+  if(!selectedStripDate) return;
+  const now = new Date();
+  const minutesFromNow = (selectedStripDate - now)/60000;
+  const label = selectedType === 'interval'
+    ? intervalDiffLabel(minutesFromNow)
+    : `${pad(selectedStripDate.getHours())}:${pad(selectedStripDate.getMinutes())}:${pad(selectedStripDate.getSeconds())}`;
+
+  if(minutesFromNow >= 0){
+    const el = document.createElement('div');
+    el.className = 'strip-select';
+    el.style.top = yFor(minutesFromNow) + 'px';
+    el.innerHTML = `<div class="sel-line"></div><div class="sel-label">${label}</div><div class="sel-handle" id="selHandle" title="Drag to adjust"></div>`;
+    stripRail.appendChild(el);
+  }
+}
+
+function applySelectedTimeToForm(){
+  if(!selectedStripDate) return;
+  const now = new Date();
+  const label = `${pad(selectedStripDate.getHours())}:${pad(selectedStripDate.getMinutes())}:${pad(selectedStripDate.getSeconds())}`;
+
+  if(selectedType === 'fixed'){
+    document.getElementById('timeInput').value = label;
+  } else {
+    const diffSec = Math.max(1, Math.round((selectedStripDate - now) / 1000));
+    document.getElementById('intervalMinutes').value = Math.floor(diffSec / 60);
+    document.getElementById('intervalSeconds').value = diffSec % 60;
+  }
+}
+
+// Convert a pixel offset within the rail into whole seconds from "now" (second precision, not just minutes)
+function secondsFromY(y){
+  const minutesFromNow = Math.max(0, y / PX_PER_MIN);
+  return Math.round(minutesFromNow * 60);
+}
+
+// --- Tap anywhere on the strip to pick a time ---
+stripContainer.addEventListener('click', (e) => {
+  if(e.target.closest('.strip-marker') || e.target.closest('.sel-handle')) return;
+  const railRect = stripRail.getBoundingClientRect();
+  const y = e.clientY - railRect.top - RAIL_TOP_PAD;
+  const totalSeconds = secondsFromY(y);
+  const now = new Date();
+  selectedStripDate = new Date(now.getTime() + totalSeconds*1000);
+  applySelectedTimeToForm();
+  renderStrip();
+});
+
+// --- Drag the handle up/down to slide the selected time (pointer events cover touch + mouse) ---
+stripRail.addEventListener('pointerdown', (e) => {
+  if(!e.target.closest('.sel-handle')) return;
+  e.preventDefault();
+  isDraggingHandle = true;
+  e.target.setPointerCapture(e.pointerId);
+});
+
+stripRail.addEventListener('pointermove', (e) => {
+  if(!isDraggingHandle) return;
+  const railRect = stripRail.getBoundingClientRect();
+  const y = e.clientY - railRect.top - RAIL_TOP_PAD;
+  const totalSeconds = secondsFromY(y);
+  const now = new Date();
+  selectedStripDate = new Date(now.getTime() + totalSeconds*1000);
+  applySelectedTimeToForm();
+  // reposition just the selection line/handle for smoothness, skip full tick rebuild
+  const selEl = stripRail.querySelector('.strip-select');
+  if(selEl){
+    const minutesFromNow = totalSeconds / 60;
+    selEl.style.top = yFor(minutesFromNow) + 'px';
+    const label = selectedType === 'interval'
+      ? intervalDiffLabel(minutesFromNow)
+      : `${pad(selectedStripDate.getHours())}:${pad(selectedStripDate.getMinutes())}:${pad(selectedStripDate.getSeconds())}`;
+    selEl.querySelector('.sel-label').textContent = label;
+  }
+});
+
+function endHandleDrag(e){
+  if(!isDraggingHandle) return;
+  isDraggingHandle = false;
+  renderStrip();
+}
+stripRail.addEventListener('pointerup', endHandleDrag);
+stripRail.addEventListener('pointercancel', endHandleDrag);
+
+// --- Up/down buttons in the form: fine-tune the Time field by 1 minute ---
+function getDateFromTimeInput(){
+  const val = document.getElementById('timeInput').value;
+  if(!val) return null;
+  const [hh, mm, ss] = val.split(':').map(Number);
+  const now = new Date();
+  let d = new Date(now);
+  d.setHours(hh, mm, ss || 0, 0);
+  if(d < now) d = new Date(d.getTime() + 24*3600000);
+  return d;
+}
+
+function shiftTimeInput(deltaMin){
+  let d = getDateFromTimeInput() || new Date();
+  d = new Date(d.getTime() + deltaMin*60000);
+  document.getElementById('timeInput').value = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  selectedStripDate = d;
+  renderStrip();
+}
+
+document.getElementById('selUpBtn').addEventListener('click', () => shiftTimeInput(1));
+document.getElementById('selDownBtn').addEventListener('click', () => shiftTimeInput(-1));
+
+document.getElementById('timeInput').addEventListener('change', () => {
+  selectedStripDate = getDateFromTimeInput();
+  renderStrip();
+});
+
+
+document.getElementById('extendStripBtn').addEventListener('click', () => {
+  extraStripMinutes += 120;
+  renderStrip();
+});
+document.getElementById('resetStripBtn').addEventListener('click', () => {
+  extraStripMinutes = 0;
+  selectedStripDate = null;
+  renderStrip();
+});
+
+renderStrip();
+
+/* ===================== Screen Wake Lock ===================== */
+let wakeLock = null;
+const wakeStatusEl = document.getElementById('wakeStatus');
+
+async function requestWakeLock(){
+  if(!('wakeLock' in navigator)){
+    wakeStatusEl.textContent = '⚠ This browser doesn\'t support keeping the screen awake automatically — set your device\'s display timeout to "never" manually.';
+    wakeStatusEl.classList.add('warn');
+    return;
+  }
+  try{
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeStatusEl.textContent = '● Screen will stay awake while this tab is open';
+    wakeStatusEl.classList.remove('warn');
+    wakeLock.addEventListener('release', () => {
+      wakeStatusEl.textContent = '○ Screen wake lock released — tap anywhere to re-enable';
+    });
+  }catch(err){
+    wakeStatusEl.textContent = '⚠ Couldn\'t lock the screen awake (' + err.message + '). Keep this tab in the foreground.';
+    wakeStatusEl.classList.add('warn');
+  }
+}
+requestWakeLock();
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible') requestWakeLock();
+});
+document.body.addEventListener('click', () => {
+  if(!wakeLock) requestWakeLock();
+});
+
+/* ===================== Background Keep-Alive (silent audio loop) ===================== */
+let keepAliveAudio = null;
+
+function makeSilentWavBlobUrl(seconds = 2, sampleRate = 8000){
+  const numSamples = seconds * sampleRate;
+  const bytesPerSample = 2;
+  const blockAlign = bytesPerSample;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = numSamples * bytesPerSample;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+  function writeStr(offset, str){ for(let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i)); }
+  writeStr(0,'RIFF'); view.setUint32(4, 36+dataSize, true); writeStr(8,'WAVE');
+  writeStr(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,1,true);
+  view.setUint32(24,sampleRate,true); view.setUint32(28,byteRate,true); view.setUint16(32,blockAlign,true);
+  view.setUint16(34,16,true); writeStr(36,'data'); view.setUint32(40,dataSize,true);
+  const blob = new Blob([view], { type:'audio/wav' });
+  return URL.createObjectURL(blob);
+}
+
+function updateKeepAliveStatus(text, warn){
+  const el = document.getElementById('keepAliveStatus');
+  el.textContent = text;
+  el.classList.toggle('warn', !!warn);
+}
+
+async function startKeepAliveAudio(){
+  if(keepAliveAudio) return;
+  try{
+    const url = makeSilentWavBlobUrl(2, 8000);
+    keepAliveAudio = new Audio(url);
+    keepAliveAudio.loop = true;
+    keepAliveAudio.volume = 0.01;
+    keepAliveAudio.setAttribute('playsinline','');
+    keepAliveAudio.addEventListener('timeupdate', tick);
+    await keepAliveAudio.play();
+    if('mediaSession' in navigator){
+      navigator.mediaSession.metadata = new MediaMetadata({ title:'Voice Alarm — running', artist:'Keeping alarms active in the background' });
+      navigator.mediaSession.playbackState = 'playing';
+      navigator.mediaSession.setActionHandler('play', () => keepAliveAudio.play());
+      navigator.mediaSession.setActionHandler('pause', () => keepAliveAudio.play());
+      navigator.mediaSession.setActionHandler('stop', () => stopKeepAliveAudio());
+    }
+    updateKeepAliveStatus('● Running — silent audio loop active');
+  }catch(err){
+    updateKeepAliveStatus('⚠ Couldn\'t start audio loop (' + err.message + ')', true);
+    document.getElementById('keepAliveToggle').checked = false;
+  }
+}
+
+function stopKeepAliveAudio(){
+  if(keepAliveAudio){
+    keepAliveAudio.removeEventListener('timeupdate', tick);
+    keepAliveAudio.pause();
+    keepAliveAudio = null;
+  }
+  if('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
+  updateKeepAliveStatus('○ Off');
+}
+
+document.getElementById('keepAliveToggle').addEventListener('change', (e) => {
+  if(e.target.checked) startKeepAliveAudio(); else stopKeepAliveAudio();
+});
+
+/* default time input to next hour */
+const d0 = new Date();
+d0.setHours(d0.getHours()+1, 0, 0, 0);
+document.getElementById('timeInput').value = `${pad(d0.getHours())}:${pad(d0.getMinutes())}`;
+</script>
+
+</body>
+</html>
