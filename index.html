@@ -1,1591 +1,812 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin — PocketOregon</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="manifest" href="/site.webmanifest">
-    <meta name="theme-color" content="#ffffff">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/avatar.js"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #f9fafb; color: #1f1e24; }
-        .outfit { font-family: 'Outfit', sans-serif; }
-        #gate { display:flex; align-items:center; justify-content:center; min-height:100vh; }
-        .card { background:white; border:1px solid #e5e7eb; border-radius:12px; padding:2.5rem; max-width:400px; width:100%; text-align:center; }
-        .stat-card { background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1.5rem; }
-        .stat-num { font-size:2rem; font-weight:800; color:#1f1e24; }
-        .stat-label { font-size:0.875rem; color:#9ca3af; margin-top:4px; }
-        table { width:100%; border-collapse:collapse; }
-        th { text-align:left; font-size:0.75rem; font-weight:600; color:#9ca3af; text-transform:uppercase; padding:10px 12px; border-bottom:1px solid #e5e7eb; }
-        td { padding:10px 12px; font-size:0.875rem; border-bottom:1px solid #f3f4f6; vertical-align:top; }
-        tr:last-child td { border-bottom:none; }
-        .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:0.75rem; font-weight:600; }
-        .badge-admin { background:#ede9fe; color:#7c3aed; }
-        .badge-reader { background:#f3f4f6; color:#6b7280; }
-        .btn { padding:8px 18px; border-radius:6px; font-size:0.875rem; font-weight:600; cursor:pointer; border:none; transition:background 0.15s; }
-        .btn-dark { background:#1f1e24; color:white; }
-        .btn-dark:hover { background:#374151; }
-        .btn-red { background:#fee2e2; color:#dc2626; }
-        .btn-red:hover { background:#fecaca; }
-        .btn-sm { padding:5px 12px; font-size:0.8rem; }
-        .tab-bar { display:flex; gap:4px; border-bottom:2px solid #e5e7eb; margin-bottom:2rem; }
-        .tab-btn { padding:10px 18px; font-size:0.9rem; font-weight:600; cursor:pointer; border:none; background:none; color:#6b7280; border-bottom:2px solid transparent; margin-bottom:-2px; transition:color 0.15s, border-color 0.15s; }
-        .tab-btn.active { color:#1f1e24; border-bottom-color:#1f1e24; }
-        .tab-btn:hover:not(.active) { color:#374151; }
-        .tab-panel { display:none; }
-        .tab-panel.active { display:block; }
-        .content-field-label { font-size:0.8rem; font-weight:600; color:#374151; margin-bottom:4px; display:block; }
-        .content-field-input { width:100%; border:1px solid #e5e7eb; border-radius:6px; padding:8px 12px; font-size:0.875rem; font-family:'Inter',sans-serif; outline:none; color:#1f1e24; transition:border-color 0.15s; background:white; resize:vertical; }
-        .content-field-input:focus { border-color:#1f1e24; }
-        .content-save-btn { background:#1f1e24; color:white; border:none; border-radius:6px; padding:7px 16px; font-size:0.8rem; font-weight:600; cursor:pointer; transition:background 0.15s; white-space:nowrap; }
-        .content-save-btn:hover { background:#374151; }
-        .content-save-btn:disabled { background:#9ca3af; cursor:not-allowed; }
-        .card-item { background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem 1.25rem; margin-bottom:0.75rem; display:flex; align-items:flex-start; gap:12px; }
-        .card-item-info { flex:1; min-width:0; }
-        .card-item-title { font-weight:700; font-size:0.9rem; color:#1f1e24; }
-        .card-item-date { font-size:0.75rem; color:#9ca3af; margin-top:2px; }
-        .card-item-body { font-size:0.8rem; color:#6b7280; margin-top:4px; line-height:1.4; }
-        .add-card-form { background:white; border:1px dashed #d1d5db; border-radius:8px; padding:1.25rem; margin-top:1rem; }
-        .add-card-form input, .add-card-form textarea { width:100%; border:1px solid #e5e7eb; border-radius:6px; padding:7px 11px; font-size:0.875rem; font-family:'Inter',sans-serif; outline:none; color:#1f1e24; transition:border-color 0.15s; margin-bottom:8px; }
-        .add-card-form input:focus, .add-card-form textarea:focus { border-color:#1f1e24; }
-        .save-indicator { display:inline-block; font-size:0.75rem; color:#10b981; opacity:0; transition:opacity 0.3s; margin-left:8px; }
-        .save-indicator.show { opacity:1; }
-        #custom-alert { display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#1f1e24; color:#fff; padding:12px 24px; border-radius:8px; z-index:700; font-size:0.875rem; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patchbay — token-saving code patcher for Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#17181a;
+    --bg-panel:#1e2023;
+    --bg-inset:#131415;
+    --line:#2c2f33;
+    --line-soft:#25272b;
+    --text:#e8e6e1;
+    --text-dim:#9a9a94;
+    --text-faint:#65665f;
+    --amber:#e8a33d;
+    --amber-dim:#8a642a;
+    --add:#5fd0a8;
+    --add-bg:rgba(95,208,168,0.10);
+    --add-border:rgba(95,208,168,0.35);
+    --del:#ef7a6d;
+    --del-bg:rgba(239,122,109,0.10);
+    --del-border:rgba(239,122,109,0.35);
+    --font-ui:'Space Grotesk', system-ui, sans-serif;
+    --font-code:'JetBrains Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(232,163,61,0.06), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-ui);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--amber-dim); color:#fff;}
+  a{color:var(--amber);}
+
+  .wrap{max-width:1400px; margin:0 auto; padding:28px 24px 80px;}
+
+  /* ---------- Header / hero ---------- */
+  header.hero{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:24px; flex-wrap:wrap;
+    border-bottom:1px solid var(--line);
+    padding-bottom:22px; margin-bottom:26px;
+  }
+  .brand{display:flex; align-items:center; gap:14px;}
+  .jack{
+    width:40px; height:40px; border-radius:50%;
+    background:var(--bg-inset); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    position:relative; flex:none;
+  }
+  .jack::before{
+    content:"";
+    width:16px; height:16px; border-radius:50%;
+    background:var(--bg);
+    border:2px solid var(--amber);
+    box-shadow:0 0 0 3px rgba(232,163,61,0.12);
+  }
+  .brand h1{
+    font-size:22px; font-weight:700; margin:0; letter-spacing:-0.01em;
+  }
+  .brand h1 span{color:var(--amber);}
+  .brand p{margin:2px 0 0; color:var(--text-dim); font-size:13px;}
+
+  .hero-blurb{max-width:420px; font-size:13px; color:var(--text-dim); line-height:1.55;}
+  .hero-blurb b{color:var(--text); font-weight:600;}
+
+  /* ---------- Patch strip signature (decorative, animated) ---------- */
+  .strip{
+    display:flex; flex-direction:column; gap:3px;
+    font-family:var(--font-code); font-size:11px; line-height:1.5;
+    padding:10px 12px; border:1px solid var(--line); border-radius:8px;
+    background:var(--bg-inset); min-width:230px;
+  }
+  .strip .l{display:flex; gap:8px; opacity:0; animation:reveal 0.4s ease forwards;}
+  .strip .l:nth-child(1){animation-delay:.05s}
+  .strip .l:nth-child(2){animation-delay:.15s}
+  .strip .l:nth-child(3){animation-delay:.25s}
+  .strip .l:nth-child(4){animation-delay:.35s}
+  .strip .m{width:14px; text-align:center; flex:none; color:var(--text-faint);}
+  .strip .l.add .m{color:var(--add);}
+  .strip .l.del .m{color:var(--del);}
+  .strip .t{color:var(--text-faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .strip .l.add .t{color:var(--add);}
+  .strip .l.del .t{color:var(--del); text-decoration:line-through; text-decoration-color:rgba(239,122,109,0.5);}
+  @keyframes reveal{ to{opacity:1;} }
+
+  /* ---------- Layout ---------- */
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media (max-width:920px){ .cols{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:10px;
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  .panel .ph{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 14px; border-bottom:1px solid var(--line);
+    font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--text-dim);
+    font-weight:600;
+  }
+  .panel .ph .count{font-family:var(--font-code); text-transform:none; letter-spacing:0; color:var(--text-faint);}
+
+  .editor{display:flex; height:360px; overflow:hidden;}
+  .gutter{
+    background:var(--bg-inset); color:var(--text-faint);
+    font-family:var(--font-code); font-size:12.5px; line-height:20px;
+    padding:10px 8px 10px 0; text-align:right; user-select:none;
+    overflow:hidden; flex:none; min-width:38px;
+    border-right:1px solid var(--line-soft);
+  }
+  textarea{
+    flex:1; resize:none; border:0; outline:0;
+    background:transparent; color:var(--text);
+    font-family:var(--font-code); font-size:12.5px; line-height:20px;
+    padding:10px 12px; white-space:pre; overflow:auto;
+  }
+  textarea::placeholder{color:var(--text-faint);}
+  .instructions-editor textarea{white-space:pre-wrap;}
+
+  .btnrow{display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--line); flex-wrap:wrap;}
+  button{
+    font-family:var(--font-ui); font-size:12.5px; font-weight:600;
+    padding:8px 13px; border-radius:7px; cursor:pointer;
+    border:1px solid var(--line); background:var(--bg-inset); color:var(--text);
+    transition:border-color .15s, color .15s, background .15s;
+  }
+  button:hover{border-color:var(--text-faint); color:#fff;}
+  button.primary{
+    background:var(--amber); border-color:var(--amber); color:#1a1200;
+  }
+  button.primary:hover{background:#f2b355; border-color:#f2b355;}
+  button.ghost{background:transparent;}
+  button:disabled{opacity:.4; cursor:not-allowed;}
+  button svg{vertical-align:-2px; margin-right:5px;}
+
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(12px);
+    background:#0f1011; border:1px solid var(--line); color:var(--text);
+    padding:9px 16px; border-radius:8px; font-size:12.5px; font-family:var(--font-ui);
+    opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
+    box-shadow:0 8px 24px rgba(0,0,0,.4);
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ---------- Output / diff ---------- */
+  .output{margin-top:18px;}
+  .diffbox{
+    font-family:var(--font-code); font-size:12.5px; line-height:20px;
+    max-height:480px; overflow:auto;
+  }
+  .drow{display:flex;}
+  .drow .m{
+    width:34px; flex:none; text-align:center; user-select:none;
+    color:var(--text-faint); border-right:1px solid var(--line-soft);
+  }
+  .drow .c{padding-left:10px; white-space:pre-wrap; word-break:break-word; flex:1;}
+  .drow.add{background:var(--add-bg);}
+  .drow.add .m{color:var(--add); background:rgba(95,208,168,0.08);}
+  .drow.del{background:var(--del-bg);}
+  .drow.del .m{color:var(--del); background:rgba(239,122,109,0.08);}
+  .drow.ctx .c{color:var(--text-dim);}
+
+  .empty-state{
+    padding:40px 20px; text-align:center; color:var(--text-faint); font-size:13px;
+  }
+
+  .warnbox{
+    margin-top:10px; padding:10px 12px; border-radius:8px;
+    background:rgba(239,122,109,0.08); border:1px solid var(--del-border);
+    color:#f2b3ab; font-size:12.5px; font-family:var(--font-code); white-space:pre-wrap;
+  }
+  .okbox{
+    margin-top:10px; padding:10px 12px; border-radius:8px;
+    background:var(--add-bg); border:1px solid var(--add-border);
+    color:var(--add); font-size:12.5px;
+  }
+  .infobox{
+    margin-top:10px; padding:10px 12px; border-radius:8px;
+    background:rgba(232,163,61,0.08); border:1px solid rgba(232,163,61,0.35);
+    color:var(--amber); font-size:12.5px; font-family:var(--font-code); white-space:pre-wrap;
+  }
+
+  /* ---------- Help / spec ---------- */
+  details.help{
+    margin-top:26px; background:var(--bg-panel); border:1px solid var(--line); border-radius:10px;
+  }
+  details.help summary{
+    cursor:pointer; padding:14px 16px; font-weight:600; font-size:14px;
+    list-style:none; display:flex; align-items:center; justify-content:space-between;
+  }
+  details.help summary::-webkit-details-marker{display:none;}
+  details.help summary .chev{transition:transform .2s; color:var(--text-faint);}
+  details.help[open] summary .chev{transform:rotate(90deg);}
+  .help-body{padding:0 16px 20px; color:var(--text-dim); font-size:13px; line-height:1.6;}
+  .cmd{
+    margin-top:14px; border:1px solid var(--line-soft); border-radius:8px; overflow:hidden;
+  }
+  .cmd .cn{
+    font-family:var(--font-code); font-size:12.5px; font-weight:700; color:var(--amber);
+    background:var(--bg-inset); padding:7px 12px; border-bottom:1px solid var(--line-soft);
+  }
+  .cmd pre{
+    margin:0; padding:10px 12px; font-family:var(--font-code); font-size:12px;
+    color:var(--text); background:var(--bg-inset); overflow-x:auto; line-height:1.6;
+  }
+  .cmd .desc{padding:8px 12px; font-size:12.5px; color:var(--text-dim);}
+  code.inline{
+    font-family:var(--font-code); background:var(--bg-inset); border:1px solid var(--line-soft);
+    padding:1px 5px; border-radius:4px; font-size:12px; color:var(--amber);
+  }
+
+  footer{
+    margin-top:40px; padding-top:18px; border-top:1px solid var(--line);
+    color:var(--text-faint); font-size:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+</style>
 </head>
 <body>
+<div class="wrap">
 
-<div id="custom-alert"></div>
-
-<div id="gate">
-    <div class="card">
-        <svg class="mx-auto mb-4" width="40" height="40" viewBox="0 0 24 24" fill="#f97316">
-            <path d="M12 2L2 8l3 3 7-4 7 4 3-3-10-6z M12 8l-5 4 5 10 5-10-5-4z"></path>
-        </svg>
-        <h1 class="outfit text-2xl font-bold mb-2">Admin Panel</h1>
-        <p id="gate-msg" class="text-gray-500 text-sm mb-6">Verifying access...</p>
-        <button id="gate-login-btn" class="btn btn-dark w-full" style="display:none;">Sign in with Google</button>
-        <a href="/" class="block mt-3 text-sm text-gray-400 hover:text-gray-600">← Back to site</a>
+  <header class="hero">
+    <div class="brand">
+      <div class="jack"></div>
+      <div>
+        <h1>Patch<span>bay</span></h1>
+        <p>Ask Claude for a patch, not a rewrite. Paste both here.</p>
+      </div>
     </div>
-</div>
 
-<div id="dashboard" style="display:none;">
-    <nav class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#f97316">
-                <path d="M12 2L2 8l3 3 7-4 7 4 3-3-10-6z M12 8l-5 4 5 10 5-10-5-4z"></path>
-            </svg>
-            <span class="outfit font-bold text-lg">PocketOregon Admin</span>
-        </div>
-        <div class="flex items-center gap-4">
-            <span id="admin-name" class="text-sm text-gray-500"></span>
-            <a href="/" class="btn btn-dark text-sm">← Site</a>
-        </div>
-    </nav>
-
-    <main class="max-w-5xl mx-auto px-4 py-10">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-            <div class="stat-card"><div id="stat-users" class="stat-num">—</div>
-  <!-- Site Status Toggle -->
-  <div id="site-status-card" style="background:#1f1e24;border:2px solid #374151;border-radius:12px;padding:1.5rem 2rem;margin-bottom:2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
-    <div>
-      <div style="font-size:1rem;font-weight:700;color:#f9fafb;margin-bottom:4px;">🔧 Site Status</div>
-      <div id="status-label" style="font-size:0.85rem;color:#6b7280;">Checking...</div>
+    <div class="hero-blurb">
+      Pasting your whole file back and forth burns tokens on every small edit.
+      Give Claude the <b>patch script</b> below once — it replies with a few lines
+      of instructions instead of the full file, and this page applies them locally.
     </div>
-    <button id="status-toggle-btn" onclick="toggleSiteStatus()" style="padding:10px 24px;border-radius:8px;border:none;font-weight:700;font-size:0.95rem;cursor:pointer;transition:all .2s;background:#22c55e;color:#fff;">Open</button>
+
+    <div class="strip" aria-hidden="true">
+      <div class="l ctx"><span class="m">·</span><span class="t">&lt;header class="site"&gt;</span></div>
+      <div class="l del"><span class="m">−</span><span class="t">  &lt;h1&gt;Old Title&lt;/h1&gt;</span></div>
+      <div class="l add"><span class="m">+</span><span class="t">  &lt;h1&gt;New Title&lt;/h1&gt;</span></div>
+      <div class="l ctx"><span class="m">·</span><span class="t">&lt;/header&gt;</span></div>
+    </div>
+  </header>
+
+  <div class="cols">
+    <!-- ORIGINAL FILE -->
+    <div class="panel">
+      <div class="ph">
+        <span>1 · Your original file</span>
+        <span class="count" id="origCount">0 lines</span>
+      </div>
+      <div class="editor">
+        <div class="gutter" id="origGutter">1</div>
+        <textarea id="origInput" spellcheck="false" placeholder="Paste your unedited HTML / CSS / JS / any text file here..."></textarea>
+      </div>
+      <div class="btnrow">
+        <button class="primary" id="copyNumberedBtn" type="button">Copy with line numbers → for Claude</button>
+        <button class="ghost" id="loadFileBtn" type="button">Upload file</button>
+        <input type="file" id="fileInput" style="display:none" accept=".html,.htm,.css,.js,.txt,.md,.json,.xml,.php,.py">
+        <button class="ghost" id="clearOrigBtn" type="button">Clear</button>
+      </div>
+    </div>
+
+    <!-- PATCH SCRIPT -->
+    <div class="panel">
+      <div class="ph">
+        <span>2 · Claude's patch script</span>
+        <span class="count" id="patchCount">0 commands</span>
+      </div>
+      <div class="editor instructions-editor" style="height:360px;">
+        <textarea id="patchInput" spellcheck="false" placeholder="Paste the patch script Claude gave you here, e.g.
+
+REPLACE 12
+[[[
+  &lt;h1&gt;New Title&lt;/h1&gt;
+]]]
+
+FIND
+[[[
+color: red;
+]]]
+REPLACE_WITH
+[[[
+color: #e8a33d;
+]]]"></textarea>
+      </div>
+      <div class="btnrow">
+        <button class="primary" id="applyBtn" type="button">Apply patch</button>
+        <button class="ghost" id="copySpecBtn" type="button">Copy DSL guide → paste to Claude once</button>
+        <button class="ghost" id="clearPatchBtn" type="button">Clear</button>
+      </div>
+    </div>
   </div>
-  <script>
-    async function loadSiteStatus() {
-      try {
-        const res = await fetch(WORKER_URL + '/content');
-        const data = await res.json();
-        const status = data.content?.site_status || 'open';
-        updateStatusUI(status);
-      } catch(e) {}
-    }
-    function updateStatusUI(status) {
-      const btn = document.getElementById('status-toggle-btn');
-      const label = document.getElementById('status-label');
-      if (status === 'closed') {
-        btn.textContent = 'Closed — click to Open';
-        btn.style.background = '#ef4444';
-        label.textContent = 'Site is currently CLOSED. Visitors see a maintenance page.';
-        label.style.color = '#ef4444';
-      } else {
-        btn.textContent = 'Open — click to Close';
-        btn.style.background = '#22c55e';
-        label.textContent = 'Site is currently OPEN and accessible to everyone.';
-        label.style.color = '#22c55e';
-      }
-    }
-    async function toggleSiteStatus() {
-      const btn = document.getElementById('status-toggle-btn');
-      const isClosed = btn.textContent.includes('Closed');
-      const newStatus = isClosed ? 'open' : 'closed';
-      if (!isClosed && !confirm('Close the site to all non-admin users?')) return;
-      try {
-        await fetch(WORKER_URL + '/content', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('po_token') }, body: JSON.stringify({ key: 'site_status', value: newStatus }) });
-        updateStatusUI(newStatus);
-      } catch(e) { alert('Failed to update status.'); }
-    }
-    loadSiteStatus();
-  </script>
-<div class="stat-label">Total Users</div></div>
-            <div class="stat-card"><div id="stat-comments" class="stat-num">—</div><div class="stat-label">Comments</div></div>
-            <div class="stat-card"><div id="stat-chats" class="stat-num">—</div><div class="stat-label">AI Chats</div></div>
-            <div class="stat-card"><div id="stat-stories" class="stat-num">—</div><div class="stat-label">Stories</div></div>
-            <div class="stat-card"><div id="stat-age" class="stat-num">—</div><div class="stat-label">Site Age (days)</div></div>
-        </div>
 
-        <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchTab('data')">Data</button>
-            <button class="tab-btn" onclick="switchTab('stories')">📚 Stories</button>
-            <button class="tab-btn" onclick="switchTab('content')">✏️ Content Editor</button>
-            <button class="tab-btn" onclick="switchTab('horizon')">🚀 Horizon</button>
-            <button class="tab-btn" onclick="switchTab('mailboxes')">✉️ Mailboxes</button>
-            <button class="tab-btn" onclick="switchTab('dev')">🛠 Files</button>
-        </div>
+  <div id="messages"></div>
 
-        <!-- DATA TAB -->
-        <div id="tab-data" class="tab-panel active">
-            <div class="bg-white border border-gray-200 rounded-lg mb-8">
-                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="outfit font-bold text-lg">Users</h2>
-                    <button onclick="loadDashboard()" class="btn btn-dark text-xs">↻ Refresh</button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table>
-                        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>⭐</th><th>Joined</th><th>Actions</th></tr></thead>
-                        <tbody id="users-table-body"><tr><td colspan="5" class="text-center text-gray-400 py-6">Loading...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="bg-white border border-gray-200 rounded-lg mb-8">
-                <div class="px-6 py-4 border-b border-gray-100"><h2 class="outfit font-bold text-lg">Recent Comments</h2></div>
-                <div class="overflow-x-auto">
-                    <table>
-                        <thead><tr><th>User</th><th>Comment</th><th>Chapter</th><th>Date</th><th>Action</th></tr></thead>
-                        <tbody id="comments-table-body"><tr><td colspan="5" class="text-center text-gray-400 py-6">Loading...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="bg-white border border-gray-200 rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-100"><h2 class="outfit font-bold text-lg">Recent AI Chats</h2></div>
-                <div class="overflow-x-auto">
-                    <table>
-                        <thead><tr><th>User ID</th><th>Message</th><th>Reply</th><th>Date</th></tr></thead>
-                        <tbody id="chats-table-body"><tr><td colspan="4" class="text-center text-gray-400 py-6">Loading...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- STORIES TAB -->
-        <div id="tab-stories" class="tab-panel">
-            <div class="bg-white border border-gray-200 rounded-lg mb-8">
-                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="outfit font-bold text-lg">All Stories</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table>
-                        <thead><tr><th>Title</th><th>Author</th><th>Genre</th><th>Status</th><th>Action</th></tr></thead>
-                        <tbody id="stories-table-body"><tr><td colspan="5" class="text-center text-gray-400 py-6">Loading...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- CONTENT EDITOR TAB -->
-        <div id="tab-content" class="tab-panel">
-            <div class="bg-white border border-gray-200 rounded-lg mb-8">
-                <div class="px-6 py-4 border-b border-gray-100">
-                    <h2 class="outfit font-bold text-lg">Hero Section</h2>
-                    <p class="text-xs text-gray-400 mt-1">Edit the big headline and subtitle shown at the top of the homepage.</p>
-                </div>
-                <div class="px-6 py-5 space-y-5">
-                    <div>
-                        <label class="content-field-label">Hero Title</label>
-                        <div class="flex gap-3 items-start">
-                            <input id="edit-hero-title" type="text" class="content-field-input" placeholder="Pocket's private spaces" />
-                            <button class="content-save-btn" onclick="saveContent('hero_title', 'edit-hero-title', 'save-hero-title')">Save</button>
-                        </div>
-                        <span id="save-hero-title" class="save-indicator">✓ Saved</span>
-                    </div>
-                    <div>
-                        <label class="content-field-label">Hero Subtitle</label>
-                        <div class="flex gap-3 items-start">
-                            <textarea id="edit-hero-subtitle" class="content-field-input" rows="3" placeholder="This site is a home of multiple fun projects..."></textarea>
-                            <button class="content-save-btn" onclick="saveContent('hero_subtitle', 'edit-hero-subtitle', 'save-hero-subtitle')">Save</button>
-                        </div>
-                        <span id="save-hero-subtitle" class="save-indicator">✓ Saved</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white border border-gray-200 rounded-lg mb-8">
-                <div class="px-6 py-4 border-b border-gray-100">
-                    <h2 class="outfit font-bold text-lg">AI Integration</h2>
-                    <p class="text-xs text-gray-400 mt-1">Control the system instructions for the integrated AI assistant.</p>
-                </div>
-                <div class="px-6 py-5 space-y-5">
-                    <div>
-                        <label class="content-field-label">System Instruction (System Prompt)</label>
-                        <div class="flex gap-3 items-start">
-                            <textarea id="edit-ai-instruction" class="content-field-input" rows="8" placeholder="Enter AI system instructions here..."></textarea>
-                            <button class="content-save-btn" onclick="saveContent('ai_system_instruction', 'edit-ai-instruction', 'save-ai-instruction')">Save</button>
-                        </div>
-                        <span id="save-ai-instruction" class="save-indicator">✓ Saved</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white border border-gray-200 rounded-lg mb-8">
-                <div class="px-6 py-4 border-b border-gray-100">
-                    <h2 class="outfit font-bold text-lg">Community Section</h2>
-                    <p class="text-xs text-gray-400 mt-1">Edit the heading and subtitle above the comments area.</p>
-                </div>
-                <div class="px-6 py-5 space-y-5">
-                    <div>
-                        <label class="content-field-label">Section Title</label>
-                        <div class="flex gap-3 items-start">
-                            <input id="edit-community-title" type="text" class="content-field-input" placeholder="Community" />
-                            <button class="content-save-btn" onclick="saveContent('community_title', 'edit-community-title', 'save-community-title')">Save</button>
-                        </div>
-                        <span id="save-community-title" class="save-indicator">✓ Saved</span>
-                    </div>
-                    <div>
-                        <label class="content-field-label">Section Subtitle</label>
-                        <div class="flex gap-3 items-start">
-                            <input id="edit-community-subtitle" type="text" class="content-field-input" placeholder="Share your thoughts about the Pocketverse." />
-                            <button class="content-save-btn" onclick="saveContent('community_subtitle', 'edit-community-subtitle', 'save-community-subtitle')">Save</button>
-                        </div>
-                        <span id="save-community-subtitle" class="save-indicator">✓ Saved</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white border border-gray-200 rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <div>
-                        <h2 class="outfit font-bold text-lg">Homepage Cards</h2>
-                        <p class="text-xs text-gray-400 mt-1">Add, edit, or remove the project cards shown on the homepage.</p>
-                    </div>
-                    <button class="btn btn-dark btn-sm" onclick="toggleAddCardForm()">+ Add Card</button>
-                </div>
-                <div class="px-6 py-5">
-                    <div id="cards-admin-list"><div class="text-gray-400 text-sm text-center py-4">Loading cards...</div></div>
-                    <div id="add-card-form" class="add-card-form" style="display:none;">
-                        <p class="text-sm font-semibold text-gray-700 mb-3">New Card</p>
-                        <input id="new-card-title" type="text" placeholder="Card title *" maxlength="80" />
-                        <input id="new-card-date" type="text" placeholder="Date label (e.g. 03/15/2026)" maxlength="40" />
-                        <textarea id="new-card-body" rows="3" placeholder="Card description..." maxlength="400"></textarea>
-                        <input id="new-card-link" type="text" placeholder="Button text (leave blank for no button)" maxlength="40" />
-                        <input id="new-card-url" type="text" placeholder="Button URL (e.g. /stories/ or https://...) — leave blank for no button" maxlength="200" />
-                        <input id="new-card-order" type="number" placeholder="Sort order (0 = first)" min="0" value="0" />
-                        <div class="flex gap-2 mt-1">
-                            <button class="btn btn-dark btn-sm" onclick="addCard()">Add Card</button>
-                            <button class="btn btn-sm" style="background:#f3f4f6;color:#374151;" onclick="toggleAddCardForm()">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- MAILBOXES TAB -->
-        <div id="tab-mailboxes" class="tab-panel">
-            <div class="bg-white border border-gray-200 rounded-lg mb-8">
-                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="outfit font-bold text-lg">✉️ All Mailboxes</h2>
-                    <button class="btn btn-dark btn-sm" onclick="loadMailboxList()">↻ Refresh</button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table>
-                        <thead><tr><th>Address</th><th>Owner</th><th>User ID</th><th>Status</th><th>Created</th></tr></thead>
-                        <tbody id="mailboxes-table-body"><tr><td colspan="5" class="text-center text-gray-400 py-6">Click Refresh to load.</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="bg-white border border-gray-200 rounded-lg mb-8">
-                <div class="px-6 py-4 border-b border-gray-100">
-                    <h2 class="outfit font-bold text-lg">✉️ Create Mailbox</h2>
-                    <p class="text-xs text-gray-400 mt-1">Creates name@pocketoregon.site for a user. Find the user's ID in the Data tab (click View, the ID is in the URL).</p>
-                </div>
-                <div class="px-6 py-5 space-y-4">
-                    <div>
-                        <label class="content-field-label">Name (before the @)</label>
-                        <input id="mb-name" type="text" class="content-field-input" placeholder="ali" maxlength="32" />
-                    </div>
-                    <div>
-                        <label class="content-field-label">User ID</label>
-                        <input id="mb-user" type="number" class="content-field-input" placeholder="e.g. 2" min="1" />
-                    </div>
-                    <div>
-                        <button class="btn btn-dark btn-sm" onclick="createMailbox()">Create Mailbox</button>
-                        <span id="mb-result" class="text-sm ml-3"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- HORIZON TAB -->
-        <div id="tab-horizon" class="tab-panel">
-            <div class="bg-white border border-gray-200 rounded-lg mb-8">
-                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <div>
-                        <h2 class="outfit font-bold text-lg">🚀 Horizon Projects</h2>
-                        <p class="text-xs text-gray-400 mt-1">Create and manage projects for starred beta users.</p>
-                    </div>
-                    <button class="btn btn-dark btn-sm" onclick="toggleNewProjectForm()">+ New Project</button>
-                </div>
-                <div class="px-6 py-5">
-                    <div id="new-project-form" class="add-card-form" style="display:none;margin-bottom:1rem;">
-                        <p class="text-sm font-semibold text-gray-700 mb-3">New Project</p>
-                        <input id="hp-title" type="text" placeholder="Project title *" maxlength="80" />
-                        <input id="hp-slug" type="text" placeholder="File slug (e.g. piano, todo-app) — no spaces *" maxlength="40" />
-                        <textarea id="hp-desc" rows="2" placeholder="Short description..." maxlength="300"></textarea>
-                        <textarea id="hp-code" rows="16" placeholder="Paste full HTML code here..." style="font-family:monospace;font-size:0.78rem;"></textarea>
-                        <div class="flex gap-2 mt-1">
-                            <button class="btn btn-dark btn-sm" onclick="createHorizonProject()">Create Project</button>
-                            <button class="btn btn-sm" style="background:#f3f4f6;color:#374151;" onclick="toggleNewProjectForm()">Cancel</button>
-                        </div>
-                    </div>
-                    <div id="horizon-projects-list"><div class="text-gray-400 text-sm text-center py-6">Loading projects...</div></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- FILES TAB -->
-        <div id="tab-dev" class="tab-panel">
-            <div class="bg-white border border-gray-200 rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="outfit font-bold text-lg">🛠 Files <span class="text-xs text-gray-400 font-normal">pocketoregon/po · main</span></h2>
-                    <button class="btn btn-dark btn-sm" onclick="loadDevFiles()">↻ Refresh</button>
-                </div>
-                <div style="display:flex;min-height:480px;">
-                    <div id="dev-tree" style="width:280px;flex-shrink:0;border-right:1px solid #e5e7eb;overflow:auto;max-height:70vh;padding:10px;font-size:0.82rem;line-height:1.7;">Click Refresh to load.</div>
-                    <div style="flex:1;min-width:0;">
-                        <div id="dev-deploy-status" style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #e5e7eb;font-size:12px;color:#475569;">Checking deployment status...</div>
-<div id="dev-file-info" style="padding:8px 16px;background:#fff;border-bottom:1px solid #e5e7eb;font-size:12px;color:#64748b;">Select a file to see its last commit information.</div>
-
-<div id="patchbay-panel" style="padding:14px 16px;border-bottom:1px solid #e5e7eb;background:#f8fafc;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-        <strong style="font-size:13px;color:#1f2937;">Patchbay</strong>
-        <span id="patchbay-target" style="font-size:11px;color:#64748b;">No file selected</span>
+  <div class="output">
+    <div class="panel">
+      <div class="ph">
+        <span>3 · Result</span>
+        <span class="count" id="resultCount"></span>
+      </div>
+      <div class="diffbox" id="diffOutput">
+        <div class="empty-state">Apply a patch to see the result here.</div>
+      </div>
+      <div class="btnrow" id="resultBtns" style="display:none;">
+        <button class="primary" id="copyResultBtn" type="button">Copy final file</button>
+        <button class="ghost" id="downloadBtn" type="button">Download file</button>
+        <button class="ghost" id="useAsOrigBtn" type="button">Use as new original (chain another patch)</button>
+      </div>
     </div>
-    <textarea id="patchbay-input" spellcheck="false" placeholder="Enter your Patchbay script here..." style="width:100%;min-height:180px;padding:10px;border:1px solid #d1d5db;border-radius:6px;font:12px/1.5 monospace;resize:vertical;background:white;color:#1f2937;"></textarea>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-        <button class="btn btn-dark btn-sm" onclick="patchbayPreview()">Preview Patch</button>
-        <button class="btn btn-sm" style="background:#e5e7eb;color:#374151;" onclick="patchbayClear()">Clear</button>
-        <button id="patchbay-apply-btn" class="btn btn-sm" style="background:#16a34a;color:white;" onclick="patchbayApply()" disabled>Apply &amp; Save</button>
+  </div>
+
+  <details class="help">
+    <summary>Patch script reference — the little language <span class="chev">▶</span></summary>
+    <div class="help-body">
+      <p>Line numbers always refer to the numbering of the file you pasted into panel 1
+      (use "Copy with line numbers" so Claude sees the same numbers you do). Commands are
+      plain text — no code fences needed. Blank lines and lines starting with <code class="inline">#</code> are ignored.</p>
+
+      <div class="cmd">
+        <div class="cn">REPLACE line</div>
+        <pre>REPLACE 12
+[[[
+  &lt;h1&gt;New Title&lt;/h1&gt;
+]]]</pre>
+        <div class="desc">Replaces a single line, or a range with <code class="inline">REPLACE 12-15</code>, with the content in the block.</div>
+      </div>
+
+      <div class="cmd">
+        <div class="cn">INSERT_AFTER / INSERT_BEFORE line</div>
+        <pre>INSERT_AFTER 30
+[[[
+&lt;script src="app.js"&gt;&lt;/script&gt;
+]]]</pre>
+        <div class="desc">Inserts new content right after (or before) the given line, without touching anything else.</div>
+      </div>
+
+      <div class="cmd">
+        <div class="cn">DELETE line</div>
+        <pre>DELETE 40
+DELETE 40-45</pre>
+        <div class="desc">Deletes a single line or a range. No block needed.</div>
+      </div>
+
+      <div class="cmd">
+        <div class="cn">FIND / REPLACE_WITH</div>
+        <pre>FIND
+[[[
+color: red;
+]]]
+REPLACE_WITH
+[[[
+color: #e8a33d;
+]]]</pre>
+        <div class="desc">Text-based, not line-based — replaces the first exact match anywhere in the file. Good when a snippet moved or the exact line number is uncertain.</div>
+      </div>
+
+      <div class="cmd">
+        <div class="cn">PREPEND / APPEND</div>
+        <pre>APPEND
+[[[
+&lt;!-- end of file --&gt;
+]]]</pre>
+        <div class="desc">Adds content to the very start or very end of the file.</div>
+      </div>
+
+      <p style="margin-top:14px;">Order of operations: line-based commands (REPLACE / INSERT / DELETE) are applied first,
+      from the bottom of the file upward, so earlier line numbers stay valid even as later ones shift.
+      Then FIND / REPLACE_WITH runs on the result, then PREPEND / APPEND. Keep multiple line-based edits
+      to non-overlapping ranges in one patch.</p>
+
+      <p style="margin-top:14px;">If you get confusing "unrecognized line" errors on a patch that looks correct,
+      the pasted text likely picked up invisible characters (non-breaking spaces, zero-width spaces, or leftover
+      text from a previous attempt still sitting in the box). Patchbay now auto-cleans common invisible characters
+      before parsing and will tell you if it had to. Use <b>Clear</b> on panel 2 before pasting a new patch to be safe.</p>
     </div>
-    <div id="patchbay-status" style="font-size:12px;margin-top:9px;color:#64748b;">Open a file, enter a patch, and preview it.</div>
-    <pre id="patchbay-diff" style="display:none;white-space:pre-wrap;overflow:auto;max-height:350px;margin-top:10px;padding:12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;font:11px/1.5 monospace;color:#374151;"></pre>
+  </details>
+
+  <footer>
+    <span>Runs entirely in your browser — nothing is uploaded anywhere.</span>
+    <span>Patchbay</span>
+  </footer>
 </div>
 
-<div id="dev-file-head" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
-<div id="dev-file-head" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
-                            <span id="dev-file-name" style="font-size:0.82rem;font-weight:600;color:#374151;">Select a file</span>
-                            <span><span id="dev-status" style="font-size:0.75rem;color:#6b7280;margin-right:10px;"></span><button id="dev-save-btn" class="btn btn-dark btn-sm" style="display:none;" onclick="saveDevFile()">Save</button></span>
-                        </div>
-                        <div style="display:flex;overflow:auto;max-height:70vh;font-family:monospace;font-size:0.78rem;line-height:1.55;">
-                            <pre id="dev-gutter" style="margin:0;padding:12px 10px;text-align:right;color:#9ca3af;background:#f9fafb;user-select:none;"></pre>
-                            <textarea id="dev-code" wrap="off" spellcheck="false" disabled oninput="devInput()" style="margin:0;padding:12px 14px;flex:1;border:none;outline:none;resize:none;white-space:pre;overflow-y:hidden;overflow-x:auto;font-family:monospace;font-size:0.78rem;line-height:1.55;background:white;color:#1f1e24;"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </main>
-</div>
-
-<div id="g_id_onload"
-     data-client_id="930005975840-u809k2ldaa6cug4jm82tafb5vahoou4h.apps.googleusercontent.com"
-     data-callback="handleAdminLogin"
-     data-auto_prompt="false">
-</div>
+<div class="toast" id="toast"></div>
 
 <script>
-    const WORKER_URL = 'https://po.pocketoregon.workers.dev';
-    const ADMIN_EMAIL = 'pocketoregon@gmail.com';
+(function(){
+  const $ = (id) => document.getElementById(id);
+  const origInput = $('origInput');
+  const origGutter = $('origGutter');
+  const patchInput = $('patchInput');
+  const origCount = $('origCount');
+  const patchCount = $('patchCount');
+  const resultCount = $('resultCount');
+  const diffOutput = $('diffOutput');
+  const messages = $('messages');
+  const resultBtns = $('resultBtns');
+  const toast = $('toast');
 
-    function showCustomAlert(msg) {
-        const box = document.getElementById('custom-alert');
-        box.textContent = msg; box.style.display = 'block';
-        setTimeout(() => box.style.display = 'none', 3000);
+  let lastResultText = null;
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>toast.classList.remove('show'), 1800);
+  }
+
+  function updateGutter(){
+    const lines = origInput.value.length ? origInput.value.split('\n') : [''];
+    origGutter.innerHTML = lines.map((_,i)=> (i+1)).join('<br>');
+    origCount.textContent = lines.length + ' line' + (lines.length===1?'':'s');
+  }
+  origInput.addEventListener('input', updateGutter);
+  origInput.addEventListener('scroll', ()=>{ origGutter.scrollTop = origInput.scrollTop; });
+  updateGutter();
+
+  function countCommands(){
+    const re = /^(REPLACE|INSERT_AFTER|INSERT_BEFORE|DELETE|FIND|PREPEND|APPEND)\b/gm;
+    const matches = patchInput.value.match(re) || [];
+    patchCount.textContent = matches.length + ' command' + (matches.length===1?'':'s');
+  }
+  patchInput.addEventListener('input', countCommands);
+  countCommands();
+
+  $('clearOrigBtn').addEventListener('click', ()=>{ origInput.value=''; updateGutter(); });
+  $('clearPatchBtn').addEventListener('click', ()=>{ patchInput.value=''; countCommands(); });
+
+  $('loadFileBtn').addEventListener('click', ()=> $('fileInput').click());
+  $('fileInput').addEventListener('change', (e)=>{
+    const f = e.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{ origInput.value = reader.result; updateGutter(); showToast('Loaded ' + f.name); };
+    reader.readAsText(f);
+  });
+
+  $('copyNumberedBtn').addEventListener('click', ()=>{
+    const lines = origInput.value.split('\n');
+    if(!origInput.value){ showToast('Paste a file first'); return; }
+    const width = String(lines.length).length;
+    const numbered = lines.map((l,i)=> String(i+1).padStart(width,' ') + '| ' + l).join('\n');
+    copyText(numbered, 'Numbered file copied — paste it to Claude');
+  });
+
+  const DSL_GUIDE = [
+"You and I are using a tool called Patchbay to edit code files without you rewriting the whole file each time.",
+"",
+"I will paste my file to you with line numbers prefixed like \"12| <content>\" (the \"N| \" part is just a ruler, not part of the file).",
+"",
+"When I ask for a change, reply ONLY with a patch script in this DSL — no full file, no extra prose, no code fences around the whole script:",
+"",
+"REPLACE <line>            -> replace one line. Use REPLACE <start>-<end> for a range.",
+"  followed by a block:",
+"  [[[",
+"  <new content, one or more lines>",
+"  ]]]",
+"",
+"INSERT_AFTER <line> / INSERT_BEFORE <line>  -> insert new lines, same [[[ ... ]]] block format.",
+"",
+"DELETE <line>  or  DELETE <start>-<end>   -> delete lines, no block needed.",
+"",
+"FIND",
+"[[[",
+"<exact snippet to find, can span lines>",
+"]]]",
+"REPLACE_WITH",
+"[[[",
+"<replacement text>",
+"]]]",
+"  -> use this instead of line numbers when you're changing a snippet whose exact line isn't certain, or the change isn't line-aligned.",
+"",
+"PREPEND / APPEND  -> same block format, adds content to the very start/end of the file.",
+"",
+"Rules: line numbers always refer to MY original numbering from the message I sent, never renumber after your own edits within the same patch. Keep multiple line-based edits to non-overlapping ranges. Lines starting with # are comments and ignored. Only use REPLACE/INSERT/DELETE/FIND/PREPEND/APPEND — nothing else. Do not restate the whole file. If a change is small, this should usually be just a few lines."
+  ].join('\n');
+
+  $('copySpecBtn').addEventListener('click', ()=>{
+    copyText(DSL_GUIDE, 'DSL guide copied — paste it to Claude once at the start of your chat');
+  });
+
+  function copyText(text, msg){
+    navigator.clipboard.writeText(text).then(()=> showToast(msg))
+      .catch(()=>{
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        showToast(msg);
+      });
+  }
+
+  // ---------------- Input sanitization ----------------
+  // Pasted text (especially from chat UIs) can carry invisible characters that
+  // silently break exact-match markers like ">>>" / "<<<" (zero-width spaces,
+  // BOM, non-breaking spaces that look like regular spaces, smart quotes, etc).
+  // We normalize those before parsing and tell the user if we changed anything.
+  function sanitizePatchText(raw){
+    let text = raw;
+    let changed = false;
+
+    // Strip BOM
+    if(text.charCodeAt(0) === 0xFEFF){ text = text.slice(1); changed = true; }
+
+    // Zero-width space, zero-width non-joiner/joiner, word joiner
+    if(/[\u200B\u200C\u200D\u2060]/.test(text)){
+      text = text.replace(/[\u200B\u200C\u200D\u2060]/g, '');
+      changed = true;
     }
-    function esc(str) { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-    function fmt(ts) { if (!ts) return '—'; return new Date(ts).toLocaleDateString([], { month:'short', day:'numeric', year:'numeric' }); }
 
-    function authHeader() {
-        const token = localStorage.getItem('po_token');
-        return token ? { 'Authorization': 'Bearer ' + token } : {};
+    // Non-breaking space / other unicode spaces -> regular space
+    if(/[\u00A0\u2000-\u200A\u202F\u205F\u3000]/.test(text)){
+      text = text.replace(/[\u00A0\u2000-\u200A\u202F\u205F\u3000]/g, ' ');
+      changed = true;
     }
 
-    function switchTab(name) {
-        if (name !== 'dev') stopDevStatusPolling();
+    // Normalize CRLF/CR to LF so line splitting is consistent
+    if(/\r/.test(text)){
+      text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      changed = true;
+    }
 
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.toggle(
-                'active',
-                btn.getAttribute('onclick') === "switchTab('" + name + "')"
-            );
-        });
+    return {text, changed};
+  }
 
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        document.getElementById('tab-' + name).classList.add('active');
+  // ---------------- Parser ----------------
+  function parsePatch(script){
+    const lines = script.split('\n');
+    const ops = [];
+    const errors = [];
+    let i = 0;
 
-        if (name === 'content') loadContentEditor();
-        if (name === 'stories') loadDashboard();
-        if (name === 'horizon') loadHorizonTab();
+    function isBlank(s){ return s.trim() === ''; }
+    function skipBlanksAndComments(){
+      while(i < lines.length && (isBlank(lines[i]) || lines[i].trim().startsWith('#'))) i++;
+    }
+    function readBlock(cmdLabel){
+      skipBlanksAndComments();
+      const openMark = i < lines.length ? lines[i].trim() : '';
+      const isOpen = openMark === '[[[' || openMark === '>>>';
+      if(i >= lines.length || !isOpen){
+        errors.push('Expected "[[[" to start a block after "' + cmdLabel + '" (line ' + (i+1) + ' of patch script).');
+        return null;
+      }
+      const closeMark = openMark === '[[[' ? ']]]' : '<<<';
+      i++; // consume opening marker
+      const buf = [];
+      let closed = false;
+      while(i < lines.length){
+        const t = lines[i].trim();
+        if(t === closeMark || t === ']]]' || t === '<<<'){ closed = true; i++; break; }
+        buf.push(lines[i]);
+        i++;
+      }
+      if(!closed){
+        errors.push('Block opened with "' + openMark + '" after "' + cmdLabel + '" was never closed with "' + closeMark + '".');
+        return null;
+      }
+      return buf.join('\n');
+    }
 
-        if (name === 'mailboxes') {
-            document.getElementById('mb-result').textContent = '';
-            loadMailboxList();
+    while(i < lines.length){
+      skipBlanksAndComments();
+      if(i >= lines.length) break;
+      const raw = lines[i];
+      const line = raw.trim();
+
+      let m;
+      if((m = line.match(/^REPLACE\s+(\d+)(?:-(\d+))?$/i))){
+        const start = parseInt(m[1],10), end = m[2] ? parseInt(m[2],10) : start;
+        i++;
+        const content = readBlock('REPLACE ' + m[1] + (m[2]?('-'+m[2]):''));
+        if(content !== null) ops.push({type:'replace', start, end, content});
+      }
+      else if((m = line.match(/^INSERT_AFTER\s+(\d+)$/i))){
+        const at = parseInt(m[1],10); i++;
+        const content = readBlock('INSERT_AFTER ' + m[1]);
+        if(content !== null) ops.push({type:'insert_after', at, content});
+      }
+      else if((m = line.match(/^INSERT_BEFORE\s+(\d+)$/i))){
+        const at = parseInt(m[1],10); i++;
+        const content = readBlock('INSERT_BEFORE ' + m[1]);
+        if(content !== null) ops.push({type:'insert_before', at, content});
+      }
+      else if((m = line.match(/^DELETE\s+(\d+)(?:-(\d+))?$/i))){
+        const start = parseInt(m[1],10), end = m[2] ? parseInt(m[2],10) : start;
+        i++;
+        ops.push({type:'delete', start, end});
+      }
+      else if(/^FIND$/i.test(line)){
+        i++;
+        const find = readBlock('FIND');
+        if(find === null){ continue; }
+        skipBlanksAndComments();
+        if(i >= lines.length || !/^REPLACE_WITH$/i.test(lines[i].trim())){
+          errors.push('Expected "REPLACE_WITH" after a FIND block (near line ' + (i+1) + ').');
+          continue;
         }
-
-        if (name === 'dev') {
-            loadDevFiles();
-            startDevStatusPolling();
-        }
+        i++;
+        const withText = readBlock('REPLACE_WITH');
+        if(withText !== null) ops.push({type:'find_replace', find, withText});
+      }
+      else if(/^PREPEND$/i.test(line)){
+        i++;
+        const content = readBlock('PREPEND');
+        if(content !== null) ops.push({type:'prepend', content});
+      }
+      else if(/^APPEND$/i.test(line)){
+        i++;
+        const content = readBlock('APPEND');
+        if(content !== null) ops.push({type:'append', content});
+      }
+      else {
+        errors.push('Unrecognized line in patch script: "' + raw + '" (line ' + (i+1) + ').');
+        i++;
+      }
     }
 
-    function handleAdminLogin(response) {
-        const token = response.credential;
-        document.getElementById('gate-msg').textContent = 'Authenticating...';
-        fetch(WORKER_URL + '/auth', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.user && data.user.role === 'admin') {
-                localStorage.setItem('po_user', JSON.stringify(data.user));
-                localStorage.setItem('po_token', data.sessionToken);
-                showDashboard(data.user);
-            } else {
-                document.getElementById('gate-msg').textContent = 'Access denied. Admin only.';
-            }
-        })
-        .catch(() => {
-            document.getElementById('gate-msg').textContent = 'Error during sign in.';
-        });
-    }
+    return {ops, errors};
+  }
 
-    function showDashboard(user) {
-        document.getElementById('gate').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-        document.getElementById('admin-name').textContent = user.name;
-        loadDashboard();
-    }
+  function applyPatch(originalText, ops){
+    const warnings = [];
+    let lines = originalText.split('\n');
+    const total = lines.length;
 
-    async function loadDashboard() {
-        try {
-            const [users, comments, chats, stories] = await Promise.all([
-                fetch(WORKER_URL + '/admin/users', { headers: authHeader() }).then(r => r.json()),
-                fetch(WORKER_URL + '/admin/comments', { headers: authHeader() }).then(r => r.json()),
-                fetch(WORKER_URL + '/admin/chats', { headers: authHeader() }).then(r => r.json()),
-                fetch(WORKER_URL + '/admin/stories', { headers: authHeader() }).then(r => r.json())
-            ]);
-            renderUsers(users);
-            renderComments(comments);
-            renderChats(chats);
-            renderStories(stories);
-            document.getElementById('stat-users').textContent = users.length || 0;
-            document.getElementById('stat-comments').textContent = comments.length || 0;
-            document.getElementById('stat-chats').textContent = chats.length || 0;
-            document.getElementById('stat-stories').textContent = stories.length || 0;
-            const age = Math.floor((Date.now() - new Date('2026-03-13')) / 86400000);
-            document.getElementById('stat-age').textContent = age;
-        } catch(e) { console.error(e); }
-    }
-
-    function renderUsers(users) {
-        const body = document.getElementById('users-table-body');
-        if (!users || users.error) { body.innerHTML = '<tr><td colspan="6" class="text-center text-red-400">Error loading users.</td></tr>'; return; }
-        body.innerHTML = users.map(u => `
-            <tr>
-                <td><div class="font-semibold" style="display:flex;align-items:center;gap:8px;">${window.poAvatarHTML(u, 24)}<span>${esc(u.name)}</span></div></td>
-                <td class="text-gray-500">${esc(u.email)}</td>
-                <td><span class="badge badge-${u.role}">${u.role}</span></td>
-                <td>
-                    ${u.email !== ADMIN_EMAIL ? `
-                        <button onclick="toggleHorizonStar(${u.id}, ${u.horizon_access ? 1 : 0})"
-                            title="${u.horizon_access ? 'Remove Horizon access' : 'Grant Horizon access'}"
-                            class="text-[14px] transition-opacity hover:opacity-70"
-                            style="background:none;border:none;cursor:pointer;padding:2px;">
-                            ${u.horizon_access ? '⭐' : '☆'}
-                        </button>
-                    ` : '<span class="text-xs text-gray-300">admin</span>'}
-                </td>
-                <td class="text-gray-400">${fmt(u.created_at)}</td>
-                <td>
-                    <div class="flex gap-2 items-center">
-                        ${u.email !== ADMIN_EMAIL ? `
-                            <button onclick="updateRole(${u.id}, '${u.role === 'creator' ? 'reader' : 'creator'}')" class="text-[10px] bg-gray-100 px-2 py-1 rounded font-bold hover:bg-gray-200">
-                                ${u.role === 'creator' ? 'Make Reader' : 'Make Creator'}
-                            </button>
-                        ` : ''}
-                        <a href="/profile.html?id=${u.id}" class="text-orange-600 hover:underline text-xs font-bold" target="_blank">View</a>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    async function updateRole(userId, newRole) {
-        try {
-            const res = await fetch(`${WORKER_URL}/admin/users/${userId}/role`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', ...authHeader() },
-                body: JSON.stringify({ role: newRole })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showCustomAlert(`Role updated to ${newRole}. User must sign out and back in to see changes.`);
-                loadDashboard();
-            } else {
-                showCustomAlert(data.error || 'Failed to update role.');
-            }
-        } catch(e) { showCustomAlert('Network error.'); }
-    }
-
-    async function toggleHorizonStar(userId, currentVal) {
-        const newVal = currentVal ? 0 : 1;
-        try {
-            const res = await fetch(`${WORKER_URL}/admin/users/${userId}/horizon`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', ...authHeader() },
-                body: JSON.stringify({ horizon_access: newVal })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showCustomAlert(newVal ? '⭐ Horizon access granted! User must re-login to see changes.' : 'Horizon access removed.');
-                loadDashboard();
-            } else { showCustomAlert(data.error || 'Failed to update.'); }
-        } catch(e) { showCustomAlert('Network error.'); }
-    }
-
-    function renderStories(stories) {
-        const body = document.getElementById('stories-table-body');
-        if (!stories || stories.error) { body.innerHTML = '<tr><td colspan="5" class="text-center text-red-400">Error loading stories.</td></tr>'; return; }
-        body.innerHTML = stories.map(s => `
-            <tr>
-                <td class="font-bold">${esc(s.title)}</td>
-                <td>${esc(s.author_name)}</td>
-                <td><span class="text-xs bg-gray-100 px-2 py-1 rounded">${esc(s.genre)}</span></td>
-                <td><span class="badge badge-${s.status === 'published' ? 'admin' : 'reader'}">${s.status}</span></td>
-                <td>
-                    <div class="flex gap-2">
-                        <a href="/stories/read.html?id=${s.id}" class="text-blue-500 hover:underline text-xs font-bold" target="_blank">View</a>
-                        <button onclick="deleteStoryAdmin(${s.id})" class="text-red-500 hover:underline text-xs font-bold">Delete</button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    async function deleteStoryAdmin(storyId) {
-        if (!confirm('Delete this story and all its chapters?')) return;
-        try {
-            const res = await fetch(`${WORKER_URL}/stories/${storyId}`, {
-                method: 'DELETE',
-                headers: authHeader()
-            });
-            const data = await res.json();
-            if (data.success) { showCustomAlert('Story deleted.'); loadDashboard(); }
-            else { showCustomAlert(data.error || 'Failed to delete.'); }
-        } catch(e) { showCustomAlert('Network error.'); }
-    }
-
-    function renderComments(comments) {
-        const body = document.getElementById('comments-table-body');
-        if (!comments || comments.error) { body.innerHTML = '<tr><td colspan="5" class="text-center text-red-400">Error loading comments.</td></tr>'; return; }
-        body.innerHTML = comments.map(c => `
-            <tr id="admin-comment-row-${c.id}">
-                <td class="font-medium">${esc(c.name || 'User #' + c.user_id)}</td>
-                <td class="max-w-xs truncate">${esc(c.text)}</td>
-                <td><span class="text-xs bg-gray-100 px-2 py-1 rounded">${esc(c.chapter)}</span></td>
-                <td class="text-gray-400 text-xs">${fmt(c.created_at)}</td>
-                <td><button onclick="deleteComment(${c.id})" class="text-red-500 hover:underline text-xs">Delete</button></td>
-            </tr>
-        `).join('');
-    }
-
-    function renderChats(chats) {
-        const body = document.getElementById('chats-table-body');
-        if (!chats || chats.error) { body.innerHTML = '<tr><td colspan="4" class="text-center text-red-400">Error loading chats.</td></tr>'; return; }
-        body.innerHTML = chats.map(c => `
-            <tr>
-                <td class="text-xs text-gray-400">#${c.user_id}</td>
-                <td class="max-w-xs truncate text-xs">${esc(c.message)}</td>
-                <td class="max-w-xs truncate text-xs text-gray-500">${esc(c.reply)}</td>
-                <td class="text-gray-400 text-[10px]">${fmt(c.created_at)}</td>
-            </tr>
-        `).join('');
-    }
-
-    async function deleteComment(commentId) {
-        if (!confirm('Delete this comment?')) return;
-        try {
-            const res = await fetch(`${WORKER_URL}/comments/${commentId}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json', ...authHeader() }
-            });
-            const data = await res.json();
-            if (data.success) {
-                const row = document.getElementById('admin-comment-row-' + commentId);
-                if (row) row.remove();
-                showCustomAlert('Comment deleted.');
-                const el = document.getElementById('stat-comments');
-                const n = parseInt(el.textContent) || 0;
-                if (n > 0) el.textContent = n - 1;
-            } else { showCustomAlert(data.error || 'Could not delete.'); }
-        } catch(e) { showCustomAlert('Network error.'); }
-    }
-
-    // ── CONTENT EDITOR ──────────────────────────────────────────────
-    async function loadContentEditor() {
-        try {
-            const res = await fetch(WORKER_URL + '/content');
-            const data = await res.json();
-            const c = data.content || {};
-            const defaults = {
-                hero_title: "Pocket's private spaces",
-                hero_subtitle: "This site is a home of multiple fun projects that would be taken in future. Stay connected with us.",
-                community_title: "Community",
-                community_subtitle: "Share your thoughts about the Pocketverse.",
-                ai_system_instruction: "You are the official AI assistant for PocketOregon — a creative fiction website about the Pocketverse saga.\nBe friendly, helpful and concise."
-            };
-            document.getElementById('edit-hero-title').value = c.hero_title || defaults.hero_title;
-            document.getElementById('edit-hero-subtitle').value = c.hero_subtitle || defaults.hero_subtitle;
-            document.getElementById('edit-community-title').value = c.community_title || defaults.community_title;
-            document.getElementById('edit-community-subtitle').value = c.community_subtitle || defaults.community_subtitle;
-            document.getElementById('edit-ai-instruction').value = c.ai_system_instruction || defaults.ai_system_instruction;
-        } catch(e) {}
-        loadCardsAdmin();
-    }
-
-    async function saveContent(key, inputId, indicatorId) {
-        const value = document.getElementById(inputId).value;
-        const btn = event.target;
-        btn.disabled = true; btn.textContent = 'Saving...';
-        try {
-            const res = await fetch(WORKER_URL + '/content', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...authHeader() },
-                body: JSON.stringify({ key, value })
-            });
-            const data = await res.json();
-            if (data.success) {
-                const ind = document.getElementById(indicatorId);
-                ind.classList.add('show');
-                setTimeout(() => ind.classList.remove('show'), 2500);
-            } else { showCustomAlert(data.error || 'Save failed.'); }
-        } catch(e) { showCustomAlert('Network error.'); }
-        btn.disabled = false; btn.textContent = 'Save';
-    }
-
-    // ── CARDS ADMIN ──────────────────────────────────────────────────
-    let adminCards = [];
-
-    async function loadCardsAdmin() {
-        try {
-            const res = await fetch(WORKER_URL + '/cards');
-            const data = await res.json();
-            adminCards = data.cards || [];
-            renderCardsAdmin();
-        } catch(e) {
-            document.getElementById('cards-admin-list').innerHTML = '<p class="text-red-400 text-sm">Error loading cards.</p>';
-        }
-    }
-
-    function renderCardsAdmin() {
-        const list = document.getElementById('cards-admin-list');
-        if (adminCards.length === 0) { list.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">No cards yet. Add one below.</p>'; return; }
-        list.innerHTML = adminCards.map((card) => `
-            <div class="card-item" id="card-admin-item-${card.id}">
-                <div class="card-item-info">
-                    <div class="card-item-title">${esc(card.title)}</div>
-                    <div class="card-item-date">
-                        ${esc(card.date || '')}
-                        ${card.link_text ? ` · Button: "${esc(card.link_text)}"` : ''}
-                        ${card.link_url ? ` → ${esc(card.link_url)}` : ''}
-                    </div>
-                    <div class="card-item-body">${esc(card.body || '')}</div>
-                </div>
-                <div class="flex flex-col gap-2 flex-shrink-0">
-                    <button class="btn btn-sm" style="background:#f3f4f6;color:#374151;font-size:0.78rem;" onclick="editCardInline(${card.id})">Edit</button>
-                    <button class="btn btn-red btn-sm" style="font-size:0.78rem;" onclick="deleteCard(${card.id})">Delete</button>
-                </div>
-            </div>
-            <div id="edit-card-form-${card.id}" style="display:none;" class="add-card-form mb-2">
-                <p class="text-sm font-semibold text-gray-700 mb-3">Editing: ${esc(card.title)}</p>
-                <input id="ec-title-${card.id}" type="text" placeholder="Title *" value="${esc(card.title)}" maxlength="80" />
-                <input id="ec-date-${card.id}" type="text" placeholder="Date label" value="${esc(card.date || '')}" maxlength="40" />
-                <textarea id="ec-body-${card.id}" rows="3" placeholder="Description..." maxlength="400">${esc(card.body || '')}</textarea>
-                <input id="ec-link-${card.id}" type="text" placeholder="Button text (leave blank for no button)" value="${esc(card.link_text || '')}" maxlength="40" />
-                <input id="ec-url-${card.id}" type="text" placeholder="Button URL (e.g. /stories/ or https://...) — leave blank for no button" value="${esc(card.link_url || '')}" maxlength="200" />
-                <input id="ec-order-${card.id}" type="number" placeholder="Sort order" value="${card.sort_order || 0}" min="0" />
-                <div class="flex gap-2 mt-1">
-                    <button class="btn btn-dark btn-sm" onclick="saveCard(${card.id})">Save Changes</button>
-                    <button class="btn btn-sm" style="background:#f3f4f6;color:#374151;" onclick="editCardInline(${card.id})">Cancel</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function editCardInline(cardId) {
-        const form = document.getElementById('edit-card-form-' + cardId);
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    }
-
-    async function saveCard(cardId) {
-        const title = document.getElementById('ec-title-' + cardId).value.trim();
-        if (!title) { showCustomAlert('Title is required.'); return; }
-        const body = {
-            title,
-            date: document.getElementById('ec-date-' + cardId).value.trim(),
-            body: document.getElementById('ec-body-' + cardId).value.trim(),
-            link_text: document.getElementById('ec-link-' + cardId).value.trim(),
-            link_url: document.getElementById('ec-url-' + cardId).value.trim(),
-            sort_order: parseInt(document.getElementById('ec-order-' + cardId).value) || 0
-        };
-        try {
-            const res = await fetch(`${WORKER_URL}/cards/${cardId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', ...authHeader() },
-                body: JSON.stringify(body)
-            });
-            const data = await res.json();
-            if (data.success) { showCustomAlert('Card updated!'); loadCardsAdmin(); }
-            else { showCustomAlert(data.error || 'Save failed.'); }
-        } catch(e) { showCustomAlert('Network error.'); }
-    }
-
-    async function deleteCard(cardId) {
-        if (!confirm('Delete this card from the homepage?')) return;
-        try {
-            const res = await fetch(`${WORKER_URL}/cards/${cardId}`, {
-                method: 'DELETE',
-                headers: { ...authHeader() }
-            });
-            const data = await res.json();
-            if (data.success) { showCustomAlert('Card deleted.'); loadCardsAdmin(); }
-            else { showCustomAlert(data.error || 'Delete failed.'); }
-        } catch(e) { showCustomAlert('Network error.'); }
-    }
-
-    function toggleAddCardForm() {
-        const form = document.getElementById('add-card-form');
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        if (form.style.display === 'block') document.getElementById('new-card-title').focus();
-    }
-
-    async function addCard() {
-        const title = document.getElementById('new-card-title').value.trim();
-        if (!title) { showCustomAlert('Title is required.'); return; }
-        const body = {
-            title,
-            date: document.getElementById('new-card-date').value.trim(),
-            body: document.getElementById('new-card-body').value.trim(),
-            link_text: document.getElementById('new-card-link').value.trim(),
-            link_url: document.getElementById('new-card-url').value.trim(),
-            sort_order: parseInt(document.getElementById('new-card-order').value) || 0
-        };
-        try {
-            const res = await fetch(WORKER_URL + '/cards', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...authHeader() },
-                body: JSON.stringify(body)
-            });
-            const data = await res.json();
-            if (data.success) {
-                showCustomAlert('Card added!');
-                ['new-card-title','new-card-date','new-card-body','new-card-link','new-card-url'].forEach(id => document.getElementById(id).value = '');
-                document.getElementById('new-card-order').value = '0';
-                toggleAddCardForm();
-                loadCardsAdmin();
-            } else { showCustomAlert(data.error || 'Add failed.'); }
-        } catch(e) { showCustomAlert('Network error.'); }
-    }
-
-    async function loadMailboxList() {
-        const body = document.getElementById('mailboxes-table-body');
-        body.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6">Loading...</td></tr>';
-        try {
-            const res = await fetch(WORKER_URL + '/mail/admin/mailboxes', { headers: authHeader() });
-            const data = await res.json();
-            const rows = data.mailboxes || [];
-            if (rows.length === 0) {
-                body.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6">No mailboxes yet.</td></tr>';
-                return;
-            }
-            body.innerHTML = rows.map(m => `
-                <tr>
-                    <td class="font-semibold">${esc(m.address)}</td>
-                    <td>${esc(m.owner_name || '—')}<div class="text-xs text-gray-400">${esc(m.owner_email || '')}</div></td>
-                    <td>#${m.user_id}</td>
-                    <td><span class="badge ${m.status === 'active' ? 'badge-admin' : 'badge-reader'}">${esc(m.status)}</span></td>
-                    <td class="text-gray-400 text-xs">${fmt(m.created_at)}</td>
-                </tr>
-            `).join('');
-        } catch (e) {
-            body.innerHTML = '<tr><td colspan="5" class="text-center text-red-400 py-6">Could not load mailboxes.</td></tr>';
-        }
-    }
-
-    async function createMailbox() {
-        const name = document.getElementById('mb-name').value.trim();
-        const user_id = parseInt(document.getElementById('mb-user').value);
-        const out = document.getElementById('mb-result');
-        out.textContent = 'Creating...';
-        try {
-            const res = await fetch(WORKER_URL + '/mail/admin/mailboxes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...authHeader() },
-                body: JSON.stringify({ name, user_id })
-            });
-            const data = await res.json();
-            if (data.success) {
-                out.textContent = '✓ Created ' + data.address;
-                document.getElementById('mb-name').value = '';
-                document.getElementById('mb-user').value = '';
-            } else {
-                out.textContent = data.error || 'Failed.';
-            }
-        } catch (e) {
-            out.textContent = 'Network error.';
-        }
-    }
-
-    window.addEventListener('load', () => {
-        const saved = localStorage.getItem('po_user');
-        const token = localStorage.getItem('po_token');
-        if (saved && token) {
-            try {
-                const user = JSON.parse(saved);
-                if (user.email === ADMIN_EMAIL) {
-                    showDashboard(user);
-                    return;
-                }
-            } catch(e) {}
-        }
-        document.getElementById('gate-msg').textContent = 'Sign in with your admin Google account.';
-        document.getElementById('gate-login-btn').style.display = 'block';
-        document.getElementById('gate-login-btn').addEventListener('click', () => {
-            google.accounts.id.prompt();
-        });
+    const lineOps = ops.filter(o => ['replace','insert_after','insert_before','delete'].includes(o.type));
+    // sort descending by the relevant starting line, so earlier edits don't shift later indices we haven't processed yet
+    lineOps.sort((a,b) => {
+      const sa = a.type==='insert_after' ? a.at : (a.type==='insert_before' ? a.at : a.start);
+      const sb = b.type==='insert_after' ? b.at : (b.type==='insert_before' ? b.at : b.start);
+      return sb - sa;
     });
 
-
-    // ── HORIZON ADMIN ──────────────────────────────────────────────
-    // ── DEV FILES (read-only) ──────────────────────────────────────
-    let devStatusTimer = null;
-    let devStatusController = null;
-    let devStatusActive = false;
-    let devStatusGeneration = 0;
-
-    async function loadDevDeployStatus() {
-        if (!devStatusActive || devStatusController) return;
-
-        const controller = new AbortController();
-        devStatusController = controller;
-        const generation = devStatusGeneration;
-        const bar = document.getElementById('dev-deploy-status');
-
-        try {
-            const res = await fetch(WORKER_URL + '/dev/status', {
-                headers: authHeader(),
-                signal: controller.signal
-            });
-            const data = await res.json();
-
-            if (!devStatusActive || generation !== devStatusGeneration) return;
-            if (!res.ok) throw new Error(data.error || 'Unable to fetch deployment status.');
-
-            const latest = data.runs && data.runs[0];
-            if (!latest) {
-                bar.textContent = 'No deployment runs found.';
-                return;
-            }
-
-            const state = latest.status === 'completed'
-                ? (latest.conclusion || 'completed')
-                : latest.status;
-
-            const colors = {
-                success: '#15803d',
-                failure: '#dc2626',
-                cancelled: '#64748b',
-                in_progress: '#2563eb',
-                queued: '#d97706'
-            };
-
-            const status = document.createElement('strong');
-            status.textContent = 'Deploy: ' + state.toUpperCase();
-            status.style.color = colors[state] || '#64748b';
-
-            const details = document.createElement('span');
-            details.style.marginLeft = '10px';
-            details.textContent = (latest.name || 'GitHub Actions') +
-                (latest.sha ? ' · ' + latest.sha : '') +
-                (latest.message ? ' · ' + latest.message : '');
-
-            bar.replaceChildren(status, details);
-
-            if (latest.created_at) {
-                const time = document.createElement('span');
-                time.style.marginLeft = '10px';
-                time.textContent = new Date(latest.created_at).toLocaleString();
-                bar.appendChild(time);
-            }
-
-            if (latest.url) {
-                const link = document.createElement('a');
-                link.href = latest.url;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                link.textContent = 'View run ↗';
-                link.style.marginLeft = '12px';
-                bar.appendChild(link);
-            }
-        } catch (error) {
-            if (error.name === 'AbortError') return;
-            if (!devStatusActive || generation !== devStatusGeneration) return;
-            bar.textContent = 'Deployment status unavailable: ' + error.message;
-        } finally {
-            if (devStatusController === controller) devStatusController = null;
+    for(const op of lineOps){
+      if(op.type === 'replace'){
+        if(op.start < 1 || op.end > total || op.start > op.end){
+          warnings.push('REPLACE ' + op.start + (op.end!==op.start?('-'+op.end):'') + ' is out of range for a ' + total + '-line file — skipped.');
+          continue;
         }
-    }
-
-    function startDevStatusPolling() {
-        stopDevStatusPolling();
-        devStatusActive = true;
-        loadDevDeployStatus();
-        devStatusTimer = setInterval(loadDevDeployStatus, 5000);
-    }
-
-    function stopDevStatusPolling() {
-        devStatusActive = false;
-        devStatusGeneration++;
-
-        if (devStatusTimer) {
-            clearInterval(devStatusTimer);
-            devStatusTimer = null;
+        lines.splice(op.start-1, op.end-op.start+1, ...op.content.split('\n'));
+      } else if(op.type === 'insert_after'){
+        if(op.at < 0 || op.at > total){
+          warnings.push('INSERT_AFTER ' + op.at + ' is out of range for a ' + total + '-line file — skipped.');
+          continue;
         }
-
-        if (devStatusController) {
-            devStatusController.abort();
-            devStatusController = null;
+        lines.splice(op.at, 0, ...op.content.split('\n'));
+      } else if(op.type === 'insert_before'){
+        if(op.at < 1 || op.at > total+1){
+          warnings.push('INSERT_BEFORE ' + op.at + ' is out of range for a ' + total + '-line file — skipped.');
+          continue;
         }
-    }
-
-    let devFileInfoRequest = 0;
-
-    async function loadDevFileInfo(path) {
-        const info = document.getElementById('dev-file-info');
-        const requestId = ++devFileInfoRequest;
-        info.textContent = 'Loading file history...';
-
-        try {
-            const res = await fetch(
-                WORKER_URL + '/dev/file-info?path=' + encodeURIComponent(path),
-                { headers: authHeader() }
-            );
-            const data = await res.json();
-
-            if (requestId !== devFileInfoRequest) return;
-            if (!res.ok) throw new Error(data.error || 'Unable to load file history.');
-
-            if (!data.found) {
-                info.textContent = 'No commit history found for this file.';
-                return;
-            }
-
-            const date = data.date
-                ? new Date(data.date).toLocaleString()
-                : 'Unknown date';
-
-            info.textContent = 'Last updated: ' + date +
-                ' · Commit: ' + (data.sha || 'Unknown') +
-                ' · ' + (data.message || 'No commit message');
-        } catch (error) {
-            if (requestId !== devFileInfoRequest) return;
-            info.textContent = 'File history unavailable: ' + error.message;
+        lines.splice(op.at-1, 0, ...op.content.split('\n'));
+      } else if(op.type === 'delete'){
+        if(op.start < 1 || op.end > total || op.start > op.end){
+          warnings.push('DELETE ' + op.start + (op.end!==op.start?('-'+op.end):'') + ' is out of range for a ' + total + '-line file — skipped.');
+          continue;
         }
+        lines.splice(op.start-1, op.end-op.start+1);
+      }
     }
 
-    async function loadDevFiles() {
-        const tree = document.getElementById('dev-tree');
-        tree.textContent = 'Loading...';
-        try {
-            const res = await fetch(WORKER_URL + '/dev/files', { headers: authHeader() });
-            const data = await res.json();
-            if (!res.ok) { tree.textContent = data.error || 'Failed to load.'; return; }
-            const root = { dirs: {}, files: [] };
-            data.files.forEach(f => {
-                const parts = f.path.split('/');
-                let node = root;
-                for (let i = 0; i < parts.length - 1; i++) {
-                    if (!node.dirs[parts[i]]) node.dirs[parts[i]] = { dirs: {}, files: [] };
-                    node = node.dirs[parts[i]];
-                }
-                node.files.push({ name: parts[parts.length - 1], path: f.path });
-            });
-            tree.innerHTML = renderDevNode(root);
-        } catch (e) { tree.textContent = 'Network error.'; }
+    let text = lines.join('\n');
+
+    for(const op of ops.filter(o=>o.type==='find_replace')){
+      if(text.indexOf(op.find) === -1){
+        warnings.push('FIND block not found in file (first 40 chars: "' + op.find.slice(0,40).replace(/\n/g,'\\n') + '...") — skipped.');
+        continue;
+      }
+      text = text.replace(op.find, () => op.withText); // function form avoids $-pattern interpretation
     }
 
-    function renderDevNode(node) {
-        let html = '';
-        Object.keys(node.dirs).sort().forEach(d => {
-            html += '<details><summary style="cursor:pointer;">📁 ' + esc(d) + '</summary><div style="padding-left:14px;">' + renderDevNode(node.dirs[d]) + '</div></details>';
-        });
-        node.files.sort((a, b) => a.name.localeCompare(b.name)).forEach(f => {
-            html += '<div data-path="' + esc(f.path) + '" onclick="openDevFile(this.dataset.path)" style="cursor:pointer;">📄 ' + esc(f.name) + '</div>';
-        });
-        return html;
+    for(const op of ops.filter(o=>o.type==='prepend')){
+      text = op.content + '\n' + text;
+    }
+    for(const op of ops.filter(o=>o.type==='append')){
+      text = text + '\n' + op.content;
     }
 
-    let devCurrent = { path: null, sha: null, original: '' };
+    return {text, warnings};
+  }
 
-    function devDirty() {
-        return devCurrent.path && document.getElementById('dev-code').value !== devCurrent.original;
+  // ---------------- Simple LCS line diff for display ----------------
+  function diffLines(a, b){
+    const n = a.length, m = b.length;
+    const dp = Array.from({length:n+1}, ()=> new Int32Array(m+1));
+    for(let i=n-1;i>=0;i--){
+      for(let j=m-1;j>=0;j--){
+        dp[i][j] = a[i]===b[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j], dp[i][j+1]);
+      }
+    }
+    const out = [];
+    let i=0, j=0;
+    while(i<n && j<m){
+      if(a[i]===b[j]){ out.push({t:'ctx', v:a[i]}); i++; j++; }
+      else if(dp[i+1][j] >= dp[i][j+1]){ out.push({t:'del', v:a[i]}); i++; }
+      else { out.push({t:'add', v:b[j]}); j++; }
+    }
+    while(i<n){ out.push({t:'del', v:a[i]}); i++; }
+    while(j<m){ out.push({t:'add', v:b[j]}); j++; }
+    return out;
+  }
+
+  function renderDiff(oldText, newText){
+    const rows = diffLines(oldText.split('\n'), newText.split('\n'));
+    const html = rows.map(r=>{
+      const marker = r.t==='add' ? '+' : r.t==='del' ? '−' : '·';
+      const cls = r.t;
+      const esc = r.v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return '<div class="drow ' + cls + '"><div class="m">' + marker + '</div><div class="c">' + (esc===''?' ':esc) + '</div></div>';
+    }).join('');
+    diffOutput.innerHTML = html || '<div class="empty-state">No changes.</div>';
+  }
+
+  function clearMessages(){ messages.innerHTML = ''; }
+  function showErrors(list){
+    const box = document.createElement('div');
+    box.className = 'warnbox';
+    box.textContent = 'Patch script problems:\n' + list.map(e=>'• '+e).join('\n');
+    messages.appendChild(box);
+  }
+  function showWarnings(list){
+    const box = document.createElement('div');
+    box.className = 'warnbox';
+    box.textContent = 'Applied with warnings:\n' + list.map(e=>'• '+e).join('\n');
+    messages.appendChild(box);
+  }
+  function showInfo(text){
+    const box = document.createElement('div');
+    box.className = 'infobox';
+    box.textContent = text;
+    messages.appendChild(box);
+  }
+  function showOk(text){
+    const box = document.createElement('div');
+    box.className = 'okbox';
+    box.textContent = text;
+    messages.appendChild(box);
+  }
+
+  $('applyBtn').addEventListener('click', ()=>{
+    clearMessages();
+    const original = origInput.value;
+    const rawScript = patchInput.value;
+    if(!original.trim()){ showErrors(['Paste your original file in panel 1 first.']); return; }
+    if(!rawScript.trim()){ showErrors(['Paste a patch script in panel 2 first.']); return; }
+
+    const {text: script, changed} = sanitizePatchText(rawScript);
+    if(changed){
+      // Reflect the cleaned text back into the textarea so what you see is what gets parsed.
+      patchInput.value = script;
+      countCommands();
+      showInfo('Note: cleaned invisible/odd characters (non-breaking spaces, zero-width characters, or CRLF line endings) from the pasted patch script before parsing.');
     }
 
-    function devInput() {
-        const code = document.getElementById('dev-code');
-        const lines = code.value.split('\n').length;
-        document.getElementById('dev-gutter').textContent = Array.from({ length: lines }, (_, i) => i + 1).join('\n');
-        code.style.height = 'auto';
-        code.style.height = code.scrollHeight + 'px';
-        document.getElementById('dev-status').textContent = devDirty() ? 'Unsaved changes' : '';
-    }
-
-    let devOpenRequest = 0;
-
-    async function openDevFile(path) {
-        if (devDirty() && !confirm('Discard unsaved changes?')) return;
-
-        const requestId = ++devOpenRequest;
-        const code = document.getElementById('dev-code');
-        const saveBtn = document.getElementById('dev-save-btn');
-
-        document.getElementById('dev-file-name').textContent = path;
-        document.getElementById('dev-status').textContent = '';
-        document.getElementById('dev-gutter').textContent = '';
-
-        saveBtn.style.display = 'none';
-        code.disabled = true;
-        code.value = 'Loading...';
-        devCurrent = { path: null, sha: null, original: '' };
-
-        loadDevFileInfo(path);
-
-        try {
-            const res = await fetch(
-                WORKER_URL + '/dev/file?path=' + encodeURIComponent(path),
-                { headers: authHeader() }
-            );
-            const data = await res.json();
-
-            if (requestId !== devOpenRequest) return;
-            if (!res.ok) {
-                code.value = data.error || 'Failed to load.';
-                return;
-            }
-            if (data.binary) {
-                code.value = '(binary file, cannot edit)';
-                return;
-            }
-
-            devCurrent = { path: path, sha: data.sha, original: data.content };
-            code.value = data.content;
-            code.disabled = false;
-            saveBtn.style.display = 'inline-block';
-            devInput();
-        } catch (e) {
-            if (requestId !== devOpenRequest) return;
-            code.value = 'Network error.';
-        }
-    }
-
-    async function saveDevFile() {
-        if (!devCurrent.path) return;
-        const p = devCurrent.path;
-        const risky = p === 'worker.js' || p === 'admin.html' || p.startsWith('lib/') || p.startsWith('routes/');
-        if (risky && !confirm('Saving ' + p + ' can break the live site if it has an error. Save anyway?')) return;
-        const btn = document.getElementById('dev-save-btn');
-        const status = document.getElementById('dev-status');
-        const content = document.getElementById('dev-code').value;
-        btn.disabled = true;
-        status.textContent = 'Saving...';
-        try {
-            const res = await fetch(WORKER_URL + '/dev/file', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', ...authHeader() },
-                body: JSON.stringify({ path: p, content: content, sha: devCurrent.sha })
-            });
-            const data = await res.json();
-            if (data.success) {
-                devCurrent.sha = data.sha;
-                devCurrent.original = content;
-                status.textContent = 'Saved. Live in about 2 minutes.';
-                loadDevFileInfo(p);
-                loadDevDeployStatus();
-            } else {
-                status.textContent = data.error || 'Save failed.';
-            }
-        } catch (e) { status.textContent = 'Network error.'; }
-        btn.disabled = false;
-    }
-
-    let horizonProjects = [];
-
-    async function loadHorizonTab() {
-        const list = document.getElementById('horizon-projects-list');
-        list.innerHTML = '<div class="text-gray-400 text-sm text-center py-4">Loading...</div>';
-        try {
-            const res = await fetch(WORKER_URL + '/horizon/projects', {
-                headers: { ...authHeader(), 'Content-Type': 'application/json' }
-            });
-            const data = await res.json();
-            horizonProjects = data.projects || [];
-            renderHorizonProjects();
-        } catch(e) {
-            list.innerHTML = '<p class="text-red-400 text-sm">Error loading projects.</p>';
-        }
-    }
-
-    function renderHorizonProjects() {
-        const list = document.getElementById('horizon-projects-list');
-        if (horizonProjects.length === 0) {
-            list.innerHTML = '<p class="text-gray-400 text-sm text-center py-6">No projects yet. Create one above.</p>';
-            return;
-        }
-        list.innerHTML = horizonProjects.map(p => `
-            <div class="card-item" id="hp-item-${p.id}">
-                <div class="card-item-info">
-                    <div class="card-item-title">${esc(p.title)}</div>
-                    <div class="card-item-date" style="display:flex;align-items:center;gap:8px;">
-                        <span>${fmt(p.created_at)}</span>
-                        ${p.slug ? `<a href="/horizon/projects/${esc(p.slug)}.html" target="_blank" style="font-size:0.72rem;color:#f97316;text-decoration:none;border:1px solid rgba(249,115,22,0.3);padding:1px 7px;border-radius:4px;background:rgba(249,115,22,0.08);">/horizon/projects/${esc(p.slug)}.html</a>` : ''}
-                    </div>
-                    <div class="card-item-body">${esc(p.description || '')}</div>
-                </div>
-                <div class="flex flex-col gap-2 flex-shrink-0">
-                    <button class="btn btn-sm" style="background:#f3f4f6;color:#374151;font-size:0.78rem;" onclick="editHorizonProject(${p.id})">Edit</button>
-                    <button class="btn btn-red btn-sm" style="font-size:0.78rem;" onclick="deleteHorizonProject(${p.id})">Delete</button>
-                </div>
-            </div>
-            <div id="hp-edit-${p.id}" style="display:none;" class="add-card-form mb-2">
-                <p class="text-sm font-semibold text-gray-700 mb-3">Editing: ${esc(p.title)}</p>
-                <input id="hpe-title-${p.id}" type="text" value="${esc(p.title)}" maxlength="80" />
-                <textarea id="hpe-desc-${p.id}" rows="2" maxlength="300">${esc(p.description || '')}</textarea>
-                <label style="font-size:0.75rem;color:#6b7280;margin-bottom:4px;display:block;">HTML Code</label>
-                <textarea id="hpe-code-${p.id}" rows="16" style="font-family:monospace;font-size:0.78rem;">Loading...</textarea>
-                <div class="flex gap-2 mt-1">
-                    <button class="btn btn-dark btn-sm" onclick="saveHorizonProject(${p.id})">Save</button>
-                    <button class="btn btn-sm" style="background:#f3f4f6;color:#374151;" onclick="closeEditHorizon(${p.id})">Cancel</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function toggleNewProjectForm() {
-        const f = document.getElementById('new-project-form');
-        f.style.display = f.style.display === 'none' ? 'block' : 'none';
-        if (f.style.display === 'block') document.getElementById('hp-title').focus();
-    }
-
-    async function editHorizonProject(id) {
-        const form = document.getElementById('hp-edit-' + id);
-        const isOpen = form.style.display !== 'none';
-        document.querySelectorAll('[id^="hp-edit-"]').forEach(f => f.style.display = 'none');
-        if (isOpen) return;
-        form.style.display = 'block';
-        const project = horizonProjects.find(p => p.id === id);
-        const codeArea = document.getElementById('hpe-code-' + id);
-        if (project && project.slug) {
-            codeArea.value = 'Loading...';
-            try {
-                const res = await fetch('/horizon/projects/' + project.slug + '.html?nocache=' + Date.now());
-                codeArea.value = res.ok ? await res.text() : '';
-            } catch(e) { codeArea.value = ''; }
-        } else {
-            codeArea.value = '';
-        }
-    }
-
-    function closeEditHorizon(id) {
-        const form = document.getElementById('hp-edit-' + id);
-        if (form) form.style.display = 'none';
-    }
-
-    async function createHorizonProject() {
-        const title = document.getElementById('hp-title').value.trim();
-        const slug = document.getElementById('hp-slug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
-        if (!title) { showCustomAlert('Title is required.'); return; }
-        if (!slug) { showCustomAlert('Slug is required.'); return; }
-        const code = document.getElementById('hp-code').value;
-        if (!code.trim()) { showCustomAlert('HTML code is required.'); return; }
-        const btn = event.target;
-        btn.disabled = true; btn.textContent = 'Creating...';
-        try {
-            const res = await fetch(WORKER_URL + '/horizon/projects', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...authHeader() },
-                body: JSON.stringify({
-                    title,
-                    slug,
-                    description: document.getElementById('hp-desc').value.trim(),
-                    html_code: code
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showCustomAlert('Project created! File committed to GitHub.');
-                ['hp-title','hp-slug','hp-desc','hp-code'].forEach(id => document.getElementById(id).value = '');
-                toggleNewProjectForm();
-                loadHorizonTab();
-            } else { showCustomAlert(data.error || 'Create failed.'); }
-        } catch(e) { showCustomAlert('Network error.'); }
-        btn.disabled = false; btn.textContent = 'Create Project';
-    }
-
-    async function saveHorizonProject(id) {
-        const title = document.getElementById('hpe-title-' + id).value.trim();
-        if (!title) { showCustomAlert('Title is required.'); return; }
-        const body = {
-            title,
-            description: document.getElementById('hpe-desc-' + id).value.trim(),
-            html_code: document.getElementById('hpe-code-' + id).value
-        };
-        try {
-            const res = await fetch(`${WORKER_URL}/horizon/projects/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', ...authHeader() },
-                body: JSON.stringify(body)
-            });
-            const data = await res.json();
-            if (data.success) { showCustomAlert('Project saved!'); loadHorizonTab(); }
-            else { showCustomAlert(data.error || 'Save failed.'); }
-        } catch(e) { showCustomAlert('Network error.'); }
-    }
-
-    async function deleteHorizonProject(id) {
-        if (!confirm('Delete this Horizon project?')) return;
-        try {
-            const res = await fetch(`${WORKER_URL}/horizon/projects/${id}`, {
-                method: 'DELETE',
-                headers: authHeader()
-            });
-            const data = await res.json();
-            if (data.success) { showCustomAlert('Project deleted.'); loadHorizonTab(); }
-            else { showCustomAlert(data.error || 'Delete failed.'); }
-        } catch(e) { showCustomAlert('Network error.'); }
-    }
-
-    // ── PATCHBAY ────────────────────────────────────────────────
-    let patchbayPreviewContent = null;
-    let patchbayPreviewPath = null;
-
-    function patchbayStatus(message, error = false) {
-        const el = document.getElementById('patchbay-status');
-        el.textContent = message;
-        el.style.color = error ? '#dc2626' : '#64748b';
-    }
-
-    function patchbayClear() {
-        document.getElementById('patchbay-input').value = '';
-        document.getElementById('patchbay-diff').style.display = 'none';
-        document.getElementById('patchbay-apply-btn').disabled = true;
-        patchbayPreviewContent = null;
-        patchbayPreviewPath = null;
-        patchbayStatus('Patch cleared.');
-    }
-
-    function patchbayParse(source) {
-        const lines = source.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').split('\n');
-        const ops = [];
-        const errors = [];
-        const OPEN = '['.repeat(3);
-        const CLOSE = ']'.repeat(3);
-        let i = 0;
-
-        function readBlock(commandLine) {
-            while (i < lines.length && !lines[i].trim()) i++;
-            if (lines[i] !== OPEN) {
-                errors.push('Line ' + commandLine + ': expected block opener.');
-                return null;
-            }
-            i++;
-            const content = [];
-            while (i < lines.length && lines[i] !== CLOSE) {
-                content.push(lines[i++]);
-            }
-            if (i >= lines.length) {
-                errors.push('Line ' + commandLine + ': missing block closer.');
-                return null;
-            }
-            i++;
-            return content.join('\n');
-        }
-
-        while (i < lines.length) {
-            const raw = lines[i];
-            const lineNo = i + 1;
-            const command = raw.trim();
-            i++;
-
-            if (!command || command.startsWith('#')) continue;
-
-            let match;
-
-            if ((match = command.match(/^(REPLACE|INSERT_AFTER|INSERT_BEFORE)\s+(\d+)(?:-(\d+))?$/))) {
-                const type = match[1];
-                const start = Number(match[2]);
-                const end = match[3] ? Number(match[3]) : start;
-
-                if (!start || !end || end < start || (type !== 'REPLACE' && end !== start)) {
-                    errors.push('Line ' + lineNo + ': invalid line range.');
-                    continue;
-                }
-
-                const content = readBlock(lineNo);
-                if (content !== null) ops.push({ type, start, end, content });
-                continue;
-            }
-
-            if ((match = command.match(/^DELETE\s+(\d+)(?:-(\d+))?$/))) {
-                const start = Number(match[1]);
-                const end = match[2] ? Number(match[2]) : start;
-                if (!start || end < start) errors.push('Line ' + lineNo + ': invalid DELETE range.');
-                else ops.push({ type: 'DELETE', start, end });
-                continue;
-            }
-
-            if (command === 'FIND') {
-                const find = readBlock(lineNo);
-                if (find === null) continue;
-
-                while (i < lines.length && !lines[i].trim()) i++;
-
-                if (lines[i] && lines[i].trim() === 'REPLACE_WITH') {
-                    i++;
-                    const replacement = readBlock(lineNo);
-                    if (replacement !== null) ops.push({ type: 'FIND', find, replacement });
-                } else {
-                    errors.push('Line ' + lineNo + ': FIND must be followed by REPLACE_WITH.');
-                }
-                continue;
-            }
-
-            if (command === 'PREPEND' || command === 'APPEND') {
-                const content = readBlock(lineNo);
-                if (content !== null) ops.push({ type: command, content });
-                continue;
-            }
-
-            errors.push('Line ' + lineNo + ': unrecognized command "' + command + '".');
-        }
-
-        return { ops, errors };
-    }
-
-    function patchbayApplyOperations(original, ops) {
-        const lines = original.split('\n');
-        const lineOps = ops.filter(op =>
-            ['REPLACE', 'DELETE', 'INSERT_AFTER', 'INSERT_BEFORE'].includes(op.type)
-        );
-
-        const ranges = lineOps.filter(op => op.type === 'REPLACE' || op.type === 'DELETE')
-            .map(op => ({ start: op.start, end: op.end }));
-
-        const anchors = lineOps.filter(op => op.type === 'INSERT_AFTER' || op.type === 'INSERT_BEFORE')
-            .map(op => op.start);
-
-        for (let i = 0; i < ranges.length; i++) {
-            for (let j = i + 1; j < ranges.length; j++) {
-                if (ranges[i].start <= ranges[j].end && ranges[j].start <= ranges[i].end) {
-                    throw new Error('Overlapping line edits detected.');
-                }
-            }
-            if (anchors.some(n => n >= ranges[i].start && n <= ranges[i].end)) {
-                throw new Error('An insertion overlaps a replaced or deleted range.');
-            }
-        }
-
-        for (const op of lineOps) {
-            if (op.start > lines.length || op.end > lines.length) {
-                throw new Error(op.type + ' references a line outside the file.');
-            }
-        }
-
-        lineOps.sort((a, b) => {
-            if (a.start !== b.start) return b.start - a.start;
-            const priority = { INSERT_AFTER: 3, INSERT_BEFORE: 2, REPLACE: 1, DELETE: 1 };
-            return priority[b.type] - priority[a.type];
-        });
-
-        lineOps.forEach(op => {
-            const index = op.start - 1;
-            if (op.type === 'REPLACE') {
-                lines.splice(index, op.end - op.start + 1, ...op.content.split('\n'));
-            } else if (op.type === 'DELETE') {
-                lines.splice(index, op.end - op.start + 1);
-            } else if (op.type === 'INSERT_BEFORE') {
-                lines.splice(index, 0, ...op.content.split('\n'));
-            } else if (op.type === 'INSERT_AFTER') {
-                lines.splice(index + 1, 0, ...op.content.split('\n'));
-            }
-        });
-
-        let result = lines.join('\n');
-
-        ops.filter(op => op.type === 'FIND').forEach(op => {
-            const first = result.indexOf(op.find);
-            if (first === -1) throw new Error('FIND text was not found.');
-            if (result.indexOf(op.find, first + op.find.length) !== -1) {
-                throw new Error('FIND text matches more than once. Make it more specific.');
-            }
-            result = result.slice(0, first) + op.replacement + result.slice(first + op.find.length);
-        });
-
-        ops.filter(op => op.type === 'PREPEND').forEach(op => {
-            result = op.content + (result ? '\n' + result : '');
-        });
-
-        ops.filter(op => op.type === 'APPEND').forEach(op => {
-            result = (result ? result + '\n' : '') + op.content;
-        });
-
-        return result;
-    }
-
-    function patchbayPreview() {
-        patchbayPreviewContent = null;
-        patchbayPreviewPath = null;
-        document.getElementById('patchbay-apply-btn').disabled = true;
-        document.getElementById('patchbay-diff').style.display = 'none';
-
-        const editor = document.getElementById('dev-code');
-
-        if (!devCurrent.path || editor.disabled) {
-            patchbayStatus('Open an editable file first.', true);
-            return;
-        }
-
-        const source = document.getElementById('patchbay-input').value;
-        if (!source.trim()) {
-            patchbayStatus('Enter a patch script first.', true);
-            return;
-        }
-
-        const parsed = patchbayParse(source);
-
-        if (parsed.errors.length) {
-            patchbayStatus('Patch rejected: ' + parsed.errors.join(' '), true);
-            return;
-        }
-
-        if (!parsed.ops.length) {
-            patchbayStatus('No valid patch commands found.', true);
-            return;
-        }
-
-        try {
-            const original = editor.value;
-            const result = patchbayApplyOperations(original, parsed.ops);
-
-            if (result === original) {
-                patchbayStatus('The patch produced no changes.', true);
-                return;
-            }
-
-            patchbayPreviewContent = result;
-            patchbayPreviewPath = devCurrent.path;
-
-            const before = original.split('\n');
-            const after = result.split('\n');
-            const output = [];
-            const max = Math.max(before.length, after.length);
-
-            for (let i = 0; i < max; i++) {
-                if (before[i] === after[i]) {
-                    output.push('  ' + (before[i] === undefined ? '' : before[i]));
-                } else {
-                    if (before[i] !== undefined) output.push('- ' + before[i]);
-                    if (after[i] !== undefined) output.push('+ ' + after[i]);
-                }
-            }
-
-            const diff = document.getElementById('patchbay-diff');
-            diff.textContent = output.join('\n');
-            diff.style.display = 'block';
-
-            document.getElementById('patchbay-apply-btn').disabled = false;
-            document.getElementById('patchbay-target').textContent = devCurrent.path;
-            patchbayStatus('Preview ready. ' + parsed.ops.length + ' operation(s) validated.');
-        } catch (error) {
-            patchbayStatus('Patch rejected: ' + error.message, true);
-        }
-    }
-
-    async function patchbayApply() {
-        if (patchbayPreviewContent === null || patchbayPreviewPath !== devCurrent.path) {
-            patchbayStatus('Preview is no longer valid. Preview the patch again.', true);
-            return;
-        }
-
-        const editor = document.getElementById('dev-code');
-        const previous = editor.value;
-        const button = document.getElementById('patchbay-apply-btn');
-
-        editor.value = patchbayPreviewContent;
-        devInput();
-        button.disabled = true;
-        patchbayStatus('Saving patched file...');
-
-        await saveDevFile();
-
-        if (devCurrent.original === editor.value) {
-            patchbayStatus('Patch saved successfully.');
-            patchbayPreviewContent = null;
-            patchbayPreviewPath = null;
-            document.getElementById('patchbay-diff').style.display = 'none';
-        } else {
-            editor.value = previous;
-            devInput();
-            patchbayStatus('Save was not completed. Original editor content restored.', true);
-        }
-
-        button.disabled = true;
-    }
-
-    // Keep the selected file visible in the Patchbay target label.
-    const patchbayFileObserver = new MutationObserver(() => {
-        const target = document.getElementById('patchbay-target');
-        if (target) target.textContent = devCurrent.path || 'No file selected';
-    });
-
-    patchbayFileObserver.observe(document.getElementById('dev-file-name'), {
-        childList: true,
-        characterData: true,
-        subtree: true
-    });
-
+    const {ops, errors} = parsePatch(script);
+    if(errors.length){ showErrors(errors); if(ops.length===0) return; }
+    if(ops.length === 0){ showErrors(['No valid commands found in the patch script.']); return; }
+
+    const {text: resultText, warnings} = applyPatch(original, ops);
+    if(warnings.length) showWarnings(warnings);
+
+    lastResultText = resultText;
+    const newLineCount = resultText.split('\n').length;
+    resultCount.textContent = newLineCount + ' lines';
+    renderDiff(original, resultText);
+    resultBtns.style.display = 'flex';
+    if(!warnings.length) showOk('Applied ' + ops.length + ' command' + (ops.length===1?'':'s') + ' successfully.');
+  });
+
+  $('copyResultBtn').addEventListener('click', ()=>{
+    if(lastResultText===null){ showToast('Nothing to copy yet'); return; }
+    copyText(lastResultText, 'Final file copied to clipboard');
+  });
+
+  $('downloadBtn').addEventListener('click', ()=>{
+    if(lastResultText===null) return;
+    const blob = new Blob([lastResultText], {type:'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'patched-file.html';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  $('useAsOrigBtn').addEventListener('click', ()=>{
+    if(lastResultText===null) return;
+    origInput.value = lastResultText;
+    updateGutter();
+    patchInput.value = '';
+    countCommands();
+    diffOutput.innerHTML = '<div class="empty-state">Apply a patch to see the result here.</div>';
+    resultCount.textContent = '';
+    resultBtns.style.display = 'none';
+    clearMessages();
+    showToast('Result moved to panel 1 — ready for the next patch');
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+})();
 </script>
 </body>
 </html>
